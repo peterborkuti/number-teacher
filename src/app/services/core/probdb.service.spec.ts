@@ -42,7 +42,8 @@ describe('ProbdbService', () => {
     service.bad(0,1);
     service.bad(1,2);
     service.bad(2,3);
-    expect(service.getNumberToAsk()).toEqual([3,2,1]);
+    service.bad(3,4);
+    expect(service.getNumberToAsk()).toEqual([4,3,2,1]);
   });
 
   xit('increases probability when time goes by', () => {

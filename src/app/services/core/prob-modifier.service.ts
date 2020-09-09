@@ -15,7 +15,8 @@ export class ProbModifierService {
     const N = (maxExponent + 1) * this.DIGITS_NUM;
     const defaultProb = 1.0/N;
     
-    return Array(maxExponent + 1).map(() => [0,1,2,3,4,5,6,7,8,9].map(i => defaultProb));
+    return Array(maxExponent + 1).fill(1)
+        .map(() => Array(this.DIGITS_NUM).fill(defaultProb).map(i => i));
   }
 
   good(prob: number): number {
