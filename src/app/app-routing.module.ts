@@ -11,6 +11,10 @@ const routes: Routes = [
     redirectTo: 'home',
     pathMatch: 'full'
   },
+  {
+    path: 'show-probdb',
+    loadChildren: () => import('./pages/show-probdb/show-probdb.module').then( m => m.ShowProbdbPageModule)
+  },
 ];
 
 @NgModule({
