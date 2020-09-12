@@ -1,3 +1,7 @@
 <p>
-  teacher works!
+  I said: {{question}}
+  <ion-input type="number" [(ngModel)]="answer"></ion-input>
+  <ion-button expand="block" (click)="checkAnswer()">
+    OK
+  </ion-button>
 </p>

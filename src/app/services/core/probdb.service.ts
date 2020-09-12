@@ -53,7 +53,13 @@ export class ProbdbService {
    * The number contains all the exponents
    */
   getNumberToAsk(): number[] {
-    return this.active.probabilities.map(exp => this.getMaxIndex(exp)).reverse();
+    let digits = this.active.probabilities.map(exp => this.getMaxIndex(exp)).reverse();
+    while (digits.length > 1 && digits[0] == 0) {
+      digits = digits.slice(1)
+    }
+
+    return digits;
+
   }
 
   private getMaxIndex(arr: number[]) {
@@ -72,7 +78,7 @@ export class ProbdbService {
 
   bad(exp: number, digit: number) {
     if (!this.active.probabilities[exp] || !this.active.probabilities[exp][digit]) {
-      console.error(`$digit or $exp out of range`);
+      console.error(`Digit:${digit} or exponent:${exp} out of range`);
       return;
     }
 
