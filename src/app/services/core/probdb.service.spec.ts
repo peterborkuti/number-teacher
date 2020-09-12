@@ -62,4 +62,11 @@ describe('ProbdbService', () => {
     expect(probs[2][1]).toBe(GOODVALUE);
   })
 
+  it('gets probdb names', () => {
+    service.create("A");
+    service.create("B");
+
+    expect(service.getNames()).toEqual(["Default", "A", "B"])
+  })
+
 });

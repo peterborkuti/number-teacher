@@ -1,4 +1,6 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Input } from '@angular/core';
+import { ProbdbService } from 'src/app/services/core/probdb.service';
+import { FormControl } from '@angular/forms';
 
 @Component({
   selector: 'probdb-map',
@@ -6,9 +8,20 @@ import { Component, OnInit } from '@angular/core';
   styleUrls: ['./probdb-map.component.scss'],
 })
 export class ProbdbMapComponent implements OnInit {
+  @Input()
+  probdb: number[][] = [[]]
 
-  constructor() { }
+  constructor(private probdbService: ProbdbService) { }
 
-  ngOnInit() {}
+  ngOnInit() {
+  }
+
+  selectProbDb() {
+
+  }
+
+
+
+
 
 }

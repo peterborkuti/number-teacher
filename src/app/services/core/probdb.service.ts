@@ -37,6 +37,10 @@ export class ProbdbService {
     return this.active ? this.active.name : ''; 
   }
 
+  getNames() : string[] {
+    return this.probdbs.map(db => db.name);
+  }
+
   getProbabilities(): number[][] {
     // deep copy
     return JSON.parse(JSON.stringify(this.active.probabilities));

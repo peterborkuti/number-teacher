@@ -5,6 +5,10 @@
 </ion-header>
 
 <ion-content>
-  <probdb-map></probdb-map>
+  <ion-label>Pet</ion-label>
+  <ion-select [(value)]="selectedDbName">
+    <ion-select-option *ngFor="let dbname of dbnames" [value]="dbname">{{dbname}}</ion-select-option>
+  </ion-select>
+  <probdb-map [probdb]="probdb"></probdb-map>
 
 </ion-content>
