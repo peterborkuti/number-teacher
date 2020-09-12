@@ -9,19 +9,11 @@ import { FormControl } from '@angular/forms';
 })
 export class ProbdbMapComponent implements OnInit {
   @Input()
-  probdb: number[][] = [[]]
+  probabilities: number[][];
 
   constructor(private probdbService: ProbdbService) { }
 
   ngOnInit() {
   }
-
-  selectProbDb() {
-
-  }
-
-
-
-
 
 }

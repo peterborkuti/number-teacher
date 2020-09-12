@@ -11,6 +11,8 @@ export class ProbdbService {
 
   constructor(private probModifier: ProbModifierService) {
     this.setActive('Default');
+    this.setActive('A');
+    this.setActive('B');
   }
 
   create(nameOfDB = 'Default'): ProbDB {

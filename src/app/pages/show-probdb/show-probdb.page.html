@@ -1,14 +1,19 @@
 <ion-header>
   <ion-toolbar>
-    <ion-title>show-probdb</ion-title>
+    <ion-title>Show probabilities</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <ion-label>Pet</ion-label>
+  <ion-list>
+    <ion-item>
+  <ion-label>Selected probability database</ion-label>
   <ion-select [(value)]="selectedDbName">
-    <ion-select-option *ngFor="let dbname of dbnames" [value]="dbname">{{dbname}}</ion-select-option>
+    <ion-select-option *ngFor="let dbName of dbNames" [value]="dbName">{{dbName}}</ion-select-option>
   </ion-select>
-  <probdb-map [probdb]="probdb"></probdb-map>
+</ion-item>
+</ion-list>
+<probdb-map [probabilities]="probdb"></probdb-map>
+
 
 </ion-content>

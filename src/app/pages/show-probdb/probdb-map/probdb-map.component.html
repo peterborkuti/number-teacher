@@ -1,3 +1,10 @@
-<p>
-  probdb-map works!
-</p>
+<p>Probabilities</p>
+<table border="1">
+  <tr>
+    <th></th><th *ngFor="let n of [0,1,2,3,4,5,6,7,8,9]">{{n}}</th>
+  </tr>
+  <tr *ngFor="let row of probabilities;let rowIndex = index">
+    <th>{{rowIndex}}</th><td *ngFor="let cell of row">{{cell}}</td>
+  </tr>
+</table>
+
