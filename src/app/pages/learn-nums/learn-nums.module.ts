@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { LearnNumsPageRoutingModule } from './learn-nums-routing.module';
 
 import { LearnNumsPage } from './learn-nums.page';
+import { TeacherComponent } from './teacher/teacher.component';
 
 @NgModule({
   imports: [
@@ -15,6 +16,6 @@ import { LearnNumsPage } from './learn-nums.page';
     IonicModule,
     LearnNumsPageRoutingModule
   ],
-  declarations: [LearnNumsPage]
+  declarations: [LearnNumsPage, TeacherComponent]
 })
 export class LearnNumsPageModule {}
