@@ -15,6 +15,10 @@ const routes: Routes = [
     path: 'show-probdb',
     loadChildren: () => import('./pages/show-probdb/show-probdb.module').then( m => m.ShowProbdbPageModule)
   },
+  {
+    path: 'learn-nums',
+    loadChildren: () => import('./pages/learn-nums/learn-nums.module').then( m => m.LearnNumsPageModule)
+  },
 ];
 
 @NgModule({
