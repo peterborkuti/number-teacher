@@ -11,7 +11,7 @@ export class ProbdbMapComponent implements OnInit {
   @Input()
   probabilities: number[][];
 
-  constructor(private probdbService: ProbdbService) { }
+  constructor() { }
 
   ngOnInit() {
   }
