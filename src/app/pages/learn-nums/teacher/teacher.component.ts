@@ -11,6 +11,7 @@ export class TeacherComponent implements OnInit {
 
   question: string;
   answer: string;
+  probs: number[][] = [[]]
 
   constructor(private probdbService: ProbdbService, private answerChecker: AnswerCheckerService) { }
 
@@ -22,6 +23,7 @@ export class TeacherComponent implements OnInit {
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';
+    this.probs = this.probdbService.getProbabilities();
   }
 
   checkAnswer() {

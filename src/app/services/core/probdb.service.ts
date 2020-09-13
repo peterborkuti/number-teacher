@@ -54,6 +54,7 @@ export class ProbdbService {
    */
   getNumberToAsk(): number[] {
     let digits = this.active.probabilities.map(exp => this.getMaxIndex(exp)).reverse();
+    console.log('Raw question:', digits.join(''));
     while (digits.length > 1 && digits[0] == 0) {
       digits = digits.slice(1)
     }
@@ -62,18 +63,18 @@ export class ProbdbService {
 
   }
 
-  private getMaxIndex(arr: number[]) {
-    let maxIndex = -1;
+  private getMaxIndex(arr: number[], delta = 0.01): number {
     let maxValue = -1;
 
     for (let i = 0; i < arr.length; i++) {
       if (arr[i] > maxValue) {
         maxValue = arr[i];
-        maxIndex = i;
       }
     }
 
-    return maxIndex;
+    const maxIndexes = arr.map((v,i) => ({value:v, index: i})).filter(vi => Math.abs(vi.value - maxValue) < delta).map(vi => vi.index);
+
+    return maxIndexes[Math.floor(Math.random()*maxIndexes.length)];
   }
 
   bad(exp: number, digit: number) {
