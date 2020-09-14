@@ -1,12 +1,20 @@
-import { Observable, Subject } from 'rxjs';
+import { Subject } from 'rxjs';
+import { Injectable, Optional } from '@angular/core';
+import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 
-export function getSpeechService(): ASpeech {
+
+export const speechServiceFactory = (tts?: TextToSpeech) => {
   const _window: any = window;
-  if (window && window.speechSynthesis) {
+  if (window && window.speechSynthesis && window.speechSynthesis.speak) {
     return new Html5Speech(window.speechSynthesis);
   }
+  if (tts) {
+    return new TTSSpeech(tts);
+  }
   
-  console.error("No window.sppechSynthesis in this browser");
+  console.error("No speech api in this environment");
+
+  return new DummySpeech();
 }
 
 export class SpeechConfig {
@@ -17,21 +25,9 @@ export class SpeechConfig {
 }
 
 export abstract class ASpeech {
-  public abstract getConfig(): SpeechConfig;
-  public abstract setConfig(config: SpeechConfig);
-  public abstract readonly $languageNames: Subject<string[]>;
-  public abstract say(whatToSay: string, language?:string): void;
-}
-
-class Html5Speech implements ASpeech {
   public readonly $languageNames = new Subject<string[]>();
-
-  private voices: {[name:string]: SpeechSynthesisVoice} = {};
-  private config: SpeechConfig = <SpeechConfig>{rate: 1, volume: 1, pitch: 1, voiceName: ''};
-
-  constructor(private api: SpeechSynthesis) {
-    api.onvoiceschanged = () => this.setVoices();
-  }
+  config: SpeechConfig = <SpeechConfig>{rate: 1, volume: 1, pitch: 1, voiceName: ''};
+  public abstract say(whatToSay: string, language?:string): void;
 
   public getConfig(): SpeechConfig {
     return Object.assign({}, this.config);
@@ -39,6 +35,32 @@ class Html5Speech implements ASpeech {
 
   public setConfig(config: SpeechConfig) {
     this.config = Object.assign({}, config);
+  }
+}
+
+class DummySpeech extends ASpeech {
+  public say(whatToSay: string, language?: string): void {
+    console.log("Dummy says: " + whatToSay);
+  }
+}
+
+class TTSSpeech extends ASpeech {
+  constructor(api: TextToSpeech) {
+    super();
+  }
+
+  public say(whatToSay: string, language?: string): void {
+    throw new Error("Method not implemented.");
+  }
+
+}
+
+class Html5Speech extends ASpeech {
+  private voices: {[name:string]: SpeechSynthesisVoice} = {};
+
+  constructor(private api: SpeechSynthesis) {
+    super();
+    api.onvoiceschanged = () => this.setVoices();
   }
 
   private setVoices(): void {

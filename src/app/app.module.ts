@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, Optional } from '@angular/core';
 import { BrowserModule } from '@angular/platform-browser';
 import { RouteReuseStrategy } from '@angular/router';
 
@@ -8,7 +8,8 @@ import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AppComponent } from './app.component';
 import { AppRoutingModule } from './app-routing.module';
-import { getSpeechService, ASpeech } from './services/speech.service';
+import { ASpeech, speechServiceFactory } from './services/speech.service';
+import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 
 @NgModule({
   declarations: [AppComponent],
@@ -18,7 +19,7 @@ import { getSpeechService, ASpeech } from './services/speech.service';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: ASpeech, useFactory: getSpeechService }
+    { provide: ASpeech, useFactory: speechServiceFactory, deps: [[new Optional(), TextToSpeech]] }
   ],
   bootstrap: [AppComponent]
 })
