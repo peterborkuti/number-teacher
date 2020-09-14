@@ -45,6 +45,11 @@ export class AppComponent {
         url   : '/learn-nums',
         icon  : 'school'
       },
+      {
+        title : 'Settings',
+        url   : '/settings',
+        icon  : 'settings'
+      },
     ];
   }
 }

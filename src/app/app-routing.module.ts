@@ -19,6 +19,10 @@ const routes: Routes = [
     path: 'learn-nums',
     loadChildren: () => import('./pages/learn-nums/learn-nums.module').then( m => m.LearnNumsPageModule)
   },
+  {
+    path: 'settings',
+    loadChildren: () => import('./pages/settings/settings.module').then( m => m.SettingsPageModule)
+  },
 ];
 
 @NgModule({

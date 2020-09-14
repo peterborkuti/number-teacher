@@ -1,3 +1,5 @@
+import { Observable, Subject } from 'rxjs';
+
 export function getSpeechService(): ASpeech {
   const _window: any = window;
   if (window && window.speechSynthesis) {
@@ -7,20 +9,36 @@ export function getSpeechService(): ASpeech {
   console.error("No window.sppechSynthesis in this browser");
 }
 
+export class SpeechConfig {
+  pitch: number;
+  rate: number;
+  volume: number;
+  voiceName: string;
+}
+
 export abstract class ASpeech {
-  public abstract getLanguages(): string[];
+  public abstract getConfig(): SpeechConfig;
+  public abstract setConfig(config: SpeechConfig);
+  public abstract readonly $languageNames: Subject<string[]>;
   public abstract say(whatToSay: string, language?:string): void;
 }
 
 class Html5Speech implements ASpeech {
+  public readonly $languageNames = new Subject<string[]>();
+
   private voices: {[name:string]: SpeechSynthesisVoice} = {};
+  private config: SpeechConfig = <SpeechConfig>{rate: 1, volume: 1, pitch: 1, voiceName: ''};
 
   constructor(private api: SpeechSynthesis) {
     api.onvoiceschanged = () => this.setVoices();
   }
 
-  public getLanguages(): string[] {
-    return Object.keys(this.voices);
+  public getConfig(): SpeechConfig {
+    return Object.assign({}, this.config);
+  }
+
+  public setConfig(config: SpeechConfig) {
+    this.config = Object.assign({}, config);
   }
 
   private setVoices(): void {
@@ -28,6 +46,7 @@ class Html5Speech implements ASpeech {
     if (Object.keys(this.voices).length == 0) {
       console.error("No voice for speech");
     }
+    this.$languageNames.next(Object.keys(this.voices));
   }
 
   public say(phrase: string, voiceName?: string): void {
@@ -42,16 +61,20 @@ class Html5Speech implements ASpeech {
     }
 
     if (!voiceName) {
-      voiceName = Object.keys(this.voices)[0];
+      if (!this.config.voiceName) {
+        this.config.voiceName = Object.keys(this.voices)[0];
+      }
+
+      voiceName = this.config.voiceName;
       console.log("Voice is set to " + voiceName);
     }
 
     const utterance = new SpeechSynthesisUtterance(phrase);
 
     utterance.voice = this.voices[voiceName];
-    utterance.pitch = 1;
-    utterance.rate = 1;
-    utterance.volume = 1;
+    utterance.pitch = this.config.pitch;
+    utterance.rate = this.config.rate;
+    utterance.volume = this.config.volume;
 
     utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
       console.log("Error when saying " + phrase + ": " + event.error);
