@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
-import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { ASpeech } from 'src/app/services/speech.service';
 
 @Component({
@@ -13,7 +12,8 @@ export class TeacherComponent implements OnInit {
 
   question: string;
   answer: string;
-  probs: number[][] = [[]]
+  probs: number[][] = [[]];
+  hint = '';
 
   constructor(
     private probdbService: ProbdbService,
@@ -31,6 +31,7 @@ export class TeacherComponent implements OnInit {
     this.probs = this.probdbService.getProbabilities();
 
     this.speechService.say(this.question);
+    this.hint = '';
   }
 
   checkAnswer() {
@@ -43,5 +44,12 @@ export class TeacherComponent implements OnInit {
 
   say() {
     this.speechService.say(this.question);
+  }
+
+  showHint() {
+    const index = Math.floor(Math.random() * this.question.length);
+    const hint = Array(this.question.length).fill('?');
+    hint[index] = this.question[index];
+    this.hint = hint.join('');
   }
 }

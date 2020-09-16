@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { TeacherComponent } from './teacher.component';
+import { DummySpeech, ASpeech } from 'src/app/services/speech.service';
 
 describe('TeacherComponent', () => {
   let component: TeacherComponent;
@@ -10,7 +11,10 @@ describe('TeacherComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ TeacherComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [IonicModule.forRoot()],
+      providers: [
+        {provide: ASpeech, useValue: new DummySpeech()}
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(TeacherComponent);
@@ -21,4 +25,6 @@ describe('TeacherComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+
 });

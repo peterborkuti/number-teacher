@@ -1,6 +1,6 @@
-import { Subject } from 'rxjs';
-import { Injectable, Optional } from '@angular/core';
-import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
+import { Subject, BehaviorSubject } from 'rxjs';
+import { TextToSpeech, TTSOptions } from '@ionic-native/text-to-speech/ngx';
+import ISO6391 from 'iso-639-1';
 
 
 export const speechServiceFactory = (tts?: TextToSpeech) => {
@@ -25,7 +25,7 @@ export class SpeechConfig {
 }
 
 export abstract class ASpeech {
-  public readonly $languageNames = new Subject<string[]>();
+  public readonly $languageNames = new BehaviorSubject<string[]>([]);
   config: SpeechConfig = <SpeechConfig>{rate: 1, volume: 1, pitch: 1, voiceName: ''};
   public abstract say(whatToSay: string, language?:string): void;
 
@@ -38,21 +38,60 @@ export abstract class ASpeech {
   }
 }
 
-class DummySpeech extends ASpeech {
+export class DummySpeech extends ASpeech {
+  constructor() {
+    super();
+    this.$languageNames.next(["No voices"]);
+  }
+
   public say(whatToSay: string, language?: string): void {
     console.log("Dummy says: " + whatToSay);
   }
 }
 
 class TTSSpeech extends ASpeech {
-  constructor(api: TextToSpeech) {
+  constructor(private api: TextToSpeech) {
     super();
+    this.$languageNames.next(ISO6391.getAllNames());
   }
 
   public say(whatToSay: string, language?: string): void {
-    throw new Error("Method not implemented.");
+    const options: TTSOptions = <TTSOptions>{
+      text: whatToSay,
+      locale: this.getLocale(language),
+      rate: this.config.rate
+    };
+
+    this.api.speak(options)
   }
 
+  private getLocale(language?: string) {
+    if (!this.config.voiceName) {
+      this.config.voiceName = ISO6391.getAllNames()[0];
+    }
+
+    return language ? language : this.config.voiceName;
+  }
+}
+
+/**
+ * maps x (which should be between 0 and 100) to [min, max]
+ * @param x map
+ * @param min 
+ * @param max 
+ */
+export function mapToRange(x: number, min: number, max: number): number {
+  return min + (max - min) / 100.0 * x
+}
+
+/**
+ * maps x from [min, max] to [0, 100]
+ * @param x map
+ * @param min 
+ * @param max 
+ */
+export function mapFromRange(x: number, min: number, max: number): number {
+  return Math.round((x - min) * 100 / (max - min));
 }
 
 class Html5Speech extends ASpeech {
@@ -61,6 +100,23 @@ class Html5Speech extends ASpeech {
   constructor(private api: SpeechSynthesis) {
     super();
     api.onvoiceschanged = () => this.setVoices();
+  }
+
+  public getConfig() {
+    return <SpeechConfig>{
+      rate: mapFromRange(this.config.rate, 0.1, 10),
+      pitch: mapFromRange(this.config.pitch, 0, 2),
+      volume: mapFromRange(this.config.volume, 0, 1),
+      voiceName: this.config.voiceName
+    }
+
+  }
+
+  public setConfig(config: SpeechConfig) {
+    this.config.rate = mapToRange(config.rate, 0.1, 10);
+    this.config.pitch = mapToRange(config.pitch, 0, 2);
+    this.config.volume = mapToRange(config.volume, 0, 1);
+    this.config.voiceName = config.voiceName;
   }
 
   private setVoices(): void {
@@ -73,8 +129,7 @@ class Html5Speech extends ASpeech {
 
   public say(phrase: string, voiceName?: string): void {
     if (this.api.speaking) {
-      console.error('Api is already speaking. Quiting without saying:' + phrase);
-      return;
+      this.api.cancel();
     }
 
     if (Object.keys(this.voices).length == 0) {

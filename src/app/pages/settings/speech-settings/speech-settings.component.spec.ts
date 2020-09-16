@@ -2,6 +2,7 @@ import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
 import { SpeechSettingsComponent } from './speech-settings.component';
+import { ASpeech, DummySpeech } from 'src/app/services/speech.service';
 
 describe('SpeechSettingsComponent', () => {
   let component: SpeechSettingsComponent;
@@ -10,7 +11,10 @@ describe('SpeechSettingsComponent', () => {
   beforeEach(async(() => {
     TestBed.configureTestingModule({
       declarations: [ SpeechSettingsComponent ],
-      imports: [IonicModule.forRoot()]
+      imports: [IonicModule.forRoot()],
+      providers: [
+        {provide: ASpeech, useValue: new DummySpeech()}
+      ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(SpeechSettingsComponent);

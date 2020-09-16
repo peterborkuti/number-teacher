@@ -18,31 +18,31 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
   }
 
   set pitch(p: number) {
-    this.speechConfig.pitch = p / 50.0;
+    this.speechConfig.pitch = p;
     this.speechService.setConfig(this.speechConfig);
   }
 
   set rate(r: number) {
-    this.speechConfig.rate = r / 50.0;
+    this.speechConfig.rate = r;
     this.speechService.setConfig(this.speechConfig);
   }
 
   set volume(v: number) {
-    this.speechConfig.volume = v / 100.0;
+    this.speechConfig.volume = v;
     this.speechService.setConfig(this.speechConfig);
   }
 
   get pitch(): number {
-    return this.speechConfig.pitch * 50;
+    return this.speechConfig.pitch;
   }
 
   get rate(): number {
-    return this.speechConfig.rate * 50;
+    return this.speechConfig.rate;
 
   }
 
   get volume(): number {
-    return this.speechConfig.volume * 100;
+    return this.speechConfig.volume;
   }
 
   get voiceName(): string {
@@ -54,13 +54,7 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    const conf = this.speechService.getConfig();
-    this.speechConfig = {
-      rate: conf.rate * 50,
-      pitch: conf.pitch * 50,
-      volume: conf.volume* 100,
-      voiceName: conf.voiceName
-    };
+    this.speechConfig = this.speechService.getConfig();
   }
 
   ngOnDestroy() {
