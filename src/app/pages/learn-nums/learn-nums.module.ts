@@ -8,15 +8,16 @@ import { LearnNumsPageRoutingModule } from './learn-nums-routing.module';
 
 import { LearnNumsPage } from './learn-nums.page';
 import { TeacherComponent } from './teacher/teacher.component';
-import { ProbdbMapComponent } from '../show-probdb/probdb-map/probdb-map.component';
+import { ComponentsModule } from '../components.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    ComponentsModule,
     LearnNumsPageRoutingModule
   ],
-  declarations: [LearnNumsPage, TeacherComponent, ProbdbMapComponent]
+  declarations: [LearnNumsPage, TeacherComponent]
 })
 export class LearnNumsPageModule {}

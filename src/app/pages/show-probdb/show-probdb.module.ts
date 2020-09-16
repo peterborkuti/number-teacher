@@ -7,15 +7,16 @@ import { IonicModule } from '@ionic/angular';
 import { ShowProbdbPageRoutingModule } from './show-probdb-routing.module';
 
 import { ShowProbdbPage } from './show-probdb.page';
-import { ProbdbMapComponent } from './probdb-map/probdb-map.component';
+import { ComponentsModule } from '../components.module';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
+    ComponentsModule,
     ShowProbdbPageRoutingModule
   ],
-  declarations: [ShowProbdbPage, ProbdbMapComponent]
+  declarations: [ShowProbdbPage]
 })
 export class ShowProbdbPageModule {}
