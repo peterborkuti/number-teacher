@@ -1,5 +1,5 @@
 <p>
-  I said: {{question}}
+  I said: {{question}} <ion-button (click)="say()">Say again</ion-button>
   <ion-input type="number" [(ngModel)]="answer"></ion-input>
   <ion-button expand="block" (click)="checkAnswer()">
     OK

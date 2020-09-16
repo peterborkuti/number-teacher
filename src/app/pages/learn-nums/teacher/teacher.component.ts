@@ -40,4 +40,8 @@ export class TeacherComponent implements OnInit {
 
     this.generateQuestion();
   }
+
+  say() {
+    this.speechService.say(this.question);
+  }
 }
