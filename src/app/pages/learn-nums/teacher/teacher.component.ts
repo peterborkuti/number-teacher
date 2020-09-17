@@ -3,6 +3,10 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
 
+export function indexesInRandomOrder(n: number) {
+  return Array(n).fill(0).map((v,i) => i).map(i => [Math.random(), i]).sort().map(i => i[1]);
+}
+
 @Component({
   selector: 'teacher',
   templateUrl: './teacher.component.html',
@@ -14,6 +18,8 @@ export class TeacherComponent implements OnInit {
   answer: string;
   probs: number[][] = [[]];
   hint = '';
+  private hintIndexesIndex = 0;
+  private hintIndexes: number[];
 
   constructor(
     private probdbService: ProbdbService,
@@ -32,6 +38,8 @@ export class TeacherComponent implements OnInit {
 
     this.speechService.say(this.question);
     this.hint = '';
+    this.hintIndexesIndex = 0;
+    this.hintIndexes = indexesInRandomOrder(this.question.length);
   }
 
   checkAnswer() {
@@ -47,9 +55,12 @@ export class TeacherComponent implements OnInit {
   }
 
   showHint() {
-    const index = Math.floor(Math.random() * this.question.length);
     const hint = Array(this.question.length).fill('?');
-    hint[index] = this.question[index];
+
+    const hintIndex = this.hintIndexes[this.hintIndexesIndex];
+    this.hintIndexesIndex = (this.hintIndexesIndex >= this.hintIndexes.length - 1) ? 0 : this.hintIndexesIndex + 1;
+
+    hint[hintIndex] = this.question[hintIndex];
     this.hint = hint.join('');
   }
 }
