@@ -16,7 +16,7 @@ export class TeacherComponent implements OnInit {
 
   question: string;
   answer: string;
-  probs: number[][] = [[]];
+
   hint = '';
   private hintIndexesIndex = 0;
   private hintIndexes: number[];
@@ -34,7 +34,6 @@ export class TeacherComponent implements OnInit {
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';
-    this.probs = this.probdbService.getProbabilities();
 
     this.speechService.say(this.question);
     this.hint = '';
