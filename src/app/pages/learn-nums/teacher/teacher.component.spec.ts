@@ -1,7 +1,7 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { IonicModule } from '@ionic/angular';
 
-import { TeacherComponent, indexesInRandomOrder } from './teacher.component';
+import { TeacherComponent } from './teacher.component';
 import { ASpeech } from 'src/app/services/speech.service';
 import { FormsModule } from '@angular/forms';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
@@ -54,12 +54,12 @@ describe('TeacherComponent', () => {
   it('sets hint on init', () => {
     component.hint ='ANYVALUE';
     component.ngOnInit();
-    expect(component.hint).toBe('');
+    expect(component.hint).toBe(Array(QUESTION.length).fill('?').join(''));
   })
 
-  xit('shows ? and 1 digit as hint when user clicks on hint button', () => {
+  it('shows ? and 1 digit as hint when user clicks on hint button', () => {
     component.ngOnInit();
-    expect(component.hint).toBe('');
+    expect(component.hint).toBe(Array(QUESTION.length).fill('?').join(''));
 
     component.showHint();
 
@@ -76,10 +76,3 @@ describe('TeacherComponent', () => {
 
 });
 
-describe('IndexesInRandomOrder', () => {
-  it('gives same indexes once', () => {
-    const expectedSorted = [0,1,2,3,4];
-    
-    expect(indexesInRandomOrder(expectedSorted.length).sort()).toEqual(expectedSorted);
-  })
-})

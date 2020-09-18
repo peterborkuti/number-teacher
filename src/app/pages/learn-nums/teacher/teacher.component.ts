@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
@@ -21,6 +21,7 @@ export class TeacherComponent implements OnInit {
   answerIsEmpty = true;
 
   hint = '';
+
   private hintManager: HintManager;
 
   constructor(
