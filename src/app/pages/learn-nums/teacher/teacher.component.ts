@@ -3,6 +3,7 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
 import { HintService, HintManager } from 'src/app/services/hint.service';
+import { IonInput } from '@ionic/angular';
 
 
 @Component({
@@ -11,6 +12,8 @@ import { HintService, HintManager } from 'src/app/services/hint.service';
   styleUrls: ['./teacher.component.scss'],
 })
 export class TeacherComponent implements OnInit {
+  @ViewChild('numberInput') numberInput: IonInput;
+
   question: string;
   answer: string;
 
@@ -40,6 +43,8 @@ export class TeacherComponent implements OnInit {
 
     this.hintManager = this.hintService.newHint(this.question);
     this.hint = this.hintManager.getHint();
+
+    setTimeout(() => this.numberInput.setFocus(), 0);
   }
 
   checkAnswer() {
