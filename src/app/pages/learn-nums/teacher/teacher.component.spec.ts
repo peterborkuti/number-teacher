@@ -6,7 +6,6 @@ import { ASpeech } from 'src/app/services/speech.service';
 import { FormsModule } from '@angular/forms';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
-import { ShowWrongAnswerComponent } from './show-wrong-answer/show-wrong-answer.component';
 
 describe('TeacherComponent', () => {
   const QUESTION = '12345';
@@ -23,7 +22,7 @@ describe('TeacherComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TeacherComponent, ShowWrongAnswerComponent],
+      declarations: [ TeacherComponent ],
       imports: [IonicModule.forRoot(), FormsModule],
       providers: [
         {provide: ASpeech, useValue: speechService},

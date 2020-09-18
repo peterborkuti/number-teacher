@@ -1,13 +1,13 @@
 <p>
-  <ion-button name="say" (click)="sayQuestion()"><ion-icon name="megaphone"></ion-icon><span *ngIf="wrongAnswer">{{question}}</span></ion-button>
+  <ion-button name="say" (click)="say(question)"><ion-icon name="megaphone"></ion-icon><span *ngIf="wrongAnswer">{{question}}</span></ion-button>
 
-  <ion-button name="hint" (click)="showHint()">{{hint}}</ion-button>
+  <ion-button [disabled]="wrongAnswer" name="hint" (click)="showHint()">{{hint}}</ion-button>
 
-  <ion-input autofocus="true" type="number" inputmode="numeric" [(ngModel)]="answer"></ion-input>
+  <ion-input [disabled]="wrongAnswer" (ionChange)="inputChanged($event.detail.value)" autofocus="true" type="number" inputmode="numeric" [(ngModel)]="answer"></ion-input>
 
-  <ion-button [disabled]="answer == ''" name="check" (click)="checkAnswer()">
+  <ion-button [disabled]="answerIsEmpty" name="check" (click)="checkAnswer()">
     <ion-icon name="checkmark"></ion-icon>
   </ion-button>
 
-  <ion-button *ngIf="wrongAnswer" color="danger" name="sayAnswer" (click)="sayAnswer()"><ion-icon name="megaphone"></ion-icon></ion-button>
+  <ion-button *ngIf="wrongAnswer" color="danger" name="sayAnswer" (click)="say(answer)"><ion-icon name="megaphone"></ion-icon></ion-button>
 </p>

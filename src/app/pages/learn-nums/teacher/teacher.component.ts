@@ -1,11 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
+import { HintService, HintManager } from 'src/app/services/hint.service';
 
-export function indexesInRandomOrder(n: number) {
-  return Array(n).fill(0).map((v,i) => i).map(i => [Math.random(), i]).sort().map(i => i[1]);
-}
 
 @Component({
   selector: 'teacher',
@@ -13,40 +11,40 @@ export function indexesInRandomOrder(n: number) {
   styleUrls: ['./teacher.component.scss'],
 })
 export class TeacherComponent implements OnInit {
-
   question: string;
   answer: string;
 
   wrongAnswer = true;
+  answerIsEmpty = true;
 
   hint = '';
-  private hintIndexesIndex = 0;
-  private hintIndexes: number[];
+  private hintManager: HintManager;
 
   constructor(
     private probdbService: ProbdbService,
     private answerChecker: AnswerCheckerService,
-    private speechService: ASpeech) { }
+    private speechService: ASpeech,
+    private hintService: HintService) { }
 
   ngOnInit() {
-    this.generateQuestion();
+    this.newQuestion();
   }
 
-  generateQuestion() {
+  newQuestion() {
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';
     this.wrongAnswer = false;
 
-    this.speechService.say(this.question);
-    this.hint = Array(this.question.length).fill('?').join('');
-    this.hintIndexesIndex = 0;
-    this.hintIndexes = indexesInRandomOrder(this.question.length);
+    this.say(this.question);
+
+    this.hintManager = this.hintService.newHint(this.question);
+    this.hint = this.hintManager.getHint();
   }
 
   checkAnswer() {
     if (this.wrongAnswer) {
-      this.generateQuestion();
+      this.newQuestion();
 
       return;
     }
@@ -58,26 +56,20 @@ export class TeacherComponent implements OnInit {
     this.wrongAnswer = checked.bads.length > 0;
 
     if (!this.wrongAnswer) {
-      this.generateQuestion();
+      this.newQuestion();
     }
 
   }
 
-  sayQuestion() {
-    this.speechService.say(this.question);
+  inputChanged(value: string) {
+    this.answerIsEmpty = !value || value == ''; 
   }
 
-  sayAnswer() {
-    this.speechService.say(this.answer);
+  say(what: string) {
+    this.speechService.say(what);
   }
 
   showHint() {
-    const hint = Array(this.question.length).fill('?');
-
-    const hintIndex = this.hintIndexes[this.hintIndexesIndex];
-    this.hintIndexesIndex = (this.hintIndexesIndex >= this.hintIndexes.length - 1) ? 0 : this.hintIndexesIndex + 1;
-
-    hint[hintIndex] = this.question[hintIndex];
-    this.hint = hint.join('');
+    this.hint = this.hintManager.nextHint();
   }
 }
