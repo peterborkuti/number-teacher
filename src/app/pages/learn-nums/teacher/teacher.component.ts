@@ -17,6 +17,8 @@ export class TeacherComponent implements OnInit {
   question: string;
   answer: string;
 
+  wrongAnswer = true;
+
   hint = '';
   private hintIndexesIndex = 0;
   private hintIndexes: number[];
@@ -34,23 +36,39 @@ export class TeacherComponent implements OnInit {
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';
+    this.wrongAnswer = false;
 
     this.speechService.say(this.question);
-    this.hint = '';
+    this.hint = Array(this.question.length).fill('?').join('');
     this.hintIndexesIndex = 0;
     this.hintIndexes = indexesInRandomOrder(this.question.length);
   }
 
   checkAnswer() {
+    if (this.wrongAnswer) {
+      this.generateQuestion();
+
+      return;
+    }
+
     const checked = this.answerChecker.check(this.question, ''+this.answer);
     checked.bads.forEach(c => this.probdbService.bad(c.exp, c.digit));
     checked.goods.forEach(c => this.probdbService.good(c.exp, c.digit));
 
-    this.generateQuestion();
+    this.wrongAnswer = checked.bads.length > 0;
+
+    if (!this.wrongAnswer) {
+      this.generateQuestion();
+    }
+
   }
 
-  say() {
+  sayQuestion() {
     this.speechService.say(this.question);
+  }
+
+  sayAnswer() {
+    this.speechService.say(this.answer);
   }
 
   showHint() {

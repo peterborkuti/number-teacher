@@ -6,6 +6,7 @@ import { ASpeech } from 'src/app/services/speech.service';
 import { FormsModule } from '@angular/forms';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
+import { ShowWrongAnswerComponent } from './show-wrong-answer/show-wrong-answer.component';
 
 describe('TeacherComponent', () => {
   const QUESTION = '12345';
@@ -22,7 +23,7 @@ describe('TeacherComponent', () => {
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ TeacherComponent],
+      declarations: [ TeacherComponent, ShowWrongAnswerComponent],
       imports: [IonicModule.forRoot(), FormsModule],
       providers: [
         {provide: ASpeech, useValue: speechService},
@@ -57,10 +58,21 @@ describe('TeacherComponent', () => {
     expect(component.hint).toBe('');
   })
 
-  xit('shows hint when user clicks on hint button', () => {
+  xit('shows ? and 1 digit as hint when user clicks on hint button', () => {
     component.ngOnInit();
-
     expect(component.hint).toBe('');
+
+    component.showHint();
+
+    const hint = component.hint;
+    const displayedDigits = hint.split('').map((d,i) => [d,i]).filter(di => di[0] !== '?');
+
+
+    expect(displayedDigits.length).toBe(1);
+    expect(hint.length).toBe(QUESTION.length);
+
+    const [digit, index] = displayedDigits[0];
+    expect(hint[index]).toBe(digit);
   })
 
 });
