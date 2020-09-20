@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { StorageService } from '../storage.service';
 import { ProbDB } from './prob-db';
 import { ProbModifierService } from './prob-modifier.service';
 
@@ -6,59 +7,46 @@ import { ProbModifierService } from './prob-modifier.service';
   providedIn: 'root'
 })
 export class ProbdbService {
-  private probdbs: ProbDB[] = [];
-  private active: ProbDB;
-
-  constructor(private probModifier: ProbModifierService) {
-    this.setActive('Default');
-  }
-
-  create(nameOfDB = 'Default'): ProbDB {
-    let db = this.getDB(nameOfDB);
-
-    if (!db) {
-      db = this.probdbs[this.probdbs.push(new ProbDB(nameOfDB)) - 1];
-      this.reset(nameOfDB);
-    };
-
-    return db;
+  constructor(private probModifier: ProbModifierService, private storage: StorageService) {
+    this.reset('Default');
   }
 
   reset(nameOfDB: string) {
-    const db = this.create(nameOfDB);
-    db.probabilities = this.probModifier.getDefault(3);
+    this.storage.reset(nameOfDB, this.probModifier.getDefault(3));
+    this.setActive(nameOfDB);
   }
 
   setActive(nameOfDB: string) {
-    this.active = this.create(nameOfDB);
+    this.storage.setActive(nameOfDB);
   }
 
   getName(): string {
-    return this.active ? this.active.name : ''; 
+    return this.storage.getName(); 
   }
 
   getNames() : string[] {
-    return this.probdbs.map(db => db.name);
+    return this.storage.getNames();
   }
 
   getProbabilities(): number[][] {
-    // deep copy
-    return JSON.parse(JSON.stringify(this.active.probabilities));
+    return this.storage.getProbabilities();
   }
 
   /**
    * Returns with the number which digits should be asked
-   * The number contains all the exponents
+   * The number contains all not-leading-zeroes exponents
+   * 
+   * If it contains only zeroes, it will return the last digit
    */
   getNumberToAsk(): number[] {
-    let digits = this.active.probabilities.map(exp => this.getMaxIndex(exp)).reverse();
+    let digits = this.getProbabilities().map(exp => this.getMaxIndex(exp)).reverse();
     console.log('Raw question:', digits.join(''));
+
     while (digits.length > 1 && digits[0] == 0) {
       digits = digits.slice(1)
     }
 
     return digits;
-
   }
 
   private getMaxIndex(arr: number[], delta = 0.01): number {
@@ -76,28 +64,11 @@ export class ProbdbService {
   }
 
   bad(exp: number, digit: number) {
-    if (!this.active.probabilities[exp] || !this.active.probabilities[exp][digit]) {
-      console.error(`Digit:${digit} or exponent:${exp} out of range`);
-      return;
-    }
-
-    const prob = this.active.probabilities[exp][digit];
-    this.active.probabilities[exp][digit] = this.probModifier.bad(prob);
+    this.storage.setProb(exp, digit, this.probModifier.bad(this.storage.getProb(exp, digit)));
   }
 
   good(exp: number, digit: number) {
-    if (!this.active.probabilities[exp] || !this.active.probabilities[exp][digit]) {
-      console.error(`$digit or $exp out of range`);
-      return;
-    }
-
-    const prob = this.active.probabilities[exp][digit];
-    this.active.probabilities[exp][digit] = this.probModifier.good(prob);
+    this.storage.setProb(exp, digit, this.probModifier.bad(this.storage.getProb(exp, digit)));
   }
 
-  getDB(nameOfDB: string): ProbDB | undefined {
-    let dbs = this.probdbs.filter(pdb => pdb.name ==  nameOfDB);
-
-    return dbs.length === 0 ? undefined : dbs[0];
-  }
 }

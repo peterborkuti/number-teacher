@@ -21,7 +21,8 @@ export class ProbModifierService {
 
   good(prob: number): number {
     let newProb = 1;
-    if (prob >= 0 && prob < 1) {
+
+    if (prob !== undefined && (prob >= 0 && prob < 1)) {
       newProb = prob / 2.0;
     }
  
@@ -30,7 +31,8 @@ export class ProbModifierService {
 
   bad(prob: number): number {
     let newProb = 1;
-    if (prob >= 0 && prob < 1) {
+
+    if (prob !== undefined && (prob >= 0 && prob < 1)) {
       newProb = prob  + (1.0 - prob) / 2.0;
     }
  
