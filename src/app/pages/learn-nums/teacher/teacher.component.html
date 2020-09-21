@@ -10,4 +10,9 @@
   </ion-button>
 
   <ion-button *ngIf="wrongAnswer" color="danger" name="sayAnswer" (click)="say(answer)"><ion-icon name="megaphone"></ion-icon></ion-button>
+
+  <ion-range [disabled]="true" min="0" max="100" step="1" ticks="10" [(ngModel)]="score">
+    <span slot="start">good</span>
+    <span slot="end">learn more</span>
+  </ion-range>
 </p>
