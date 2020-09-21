@@ -19,24 +19,25 @@ export class ProbModifierService {
         .map(() => Array(this.DIGITS_NUM).fill(defaultProb).map(i => i));
   }
 
+  /**
+   * cut the asking probability to half
+   * @param prob 
+   */
   good(prob: number): number {
-    let newProb = 1;
+    prob = Math.max(Math.min(1, prob ? prob : 1), 0);
 
-    if (prob !== undefined && (prob >= 0 && prob < 1)) {
-      newProb = prob / 2.0;
-    }
- 
-    return newProb;
+    return prob / 2.0;
   }
 
+  /**
+   * Rise the asking probability to
+   * with its half
+   * @param prob 
+   */
   bad(prob: number): number {
-    let newProb = 1;
-
-    if (prob !== undefined && (prob >= 0 && prob < 1)) {
-      newProb = prob  + (1.0 - prob) / 2.0;
-    }
- 
-    return newProb;
+    prob = Math.min(Math.max(0, prob ? prob : 0), 1);
+  
+    return Math.max(prob  + prob / 2, 1);
   }
 
 }

@@ -45,12 +45,11 @@ export class ProbdbService {
    */
   getScore(): number {
     const flatProbs = [].concat(...this.getProbabilities());
-    let sum = flatProbs.reduce((sum, act) => sum + act, 0);
+    const initialProb = 1.0 / flatProbs.length;
+    const probabilityAfterTwoGoodAnswerWithoutBadAnswer = initialProb / 4.0;
+    let goodCount = flatProbs.filter(p => Math.abs(p - probabilityAfterTwoGoodAnswerWithoutBadAnswer) < 0.01).length;
 
-    sum = Math.max(0, sum);
-    sum = Math.min(1, sum);
-
-    return Math.round(sum * 100); 
+    return Math.round(goodCount / flatProbs.length * 100); 
   }
 
   getProbabilities(): number[][] {

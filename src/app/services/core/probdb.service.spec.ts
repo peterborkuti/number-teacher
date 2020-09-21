@@ -1,5 +1,6 @@
 import { ProbdbService } from './probdb.service';
 import { ProbModifierService } from './prob-modifier.service';
+import { StorageService } from '../storage.service';
 
 describe('ProbdbService', () => {
   let service: ProbdbService;
@@ -12,8 +13,12 @@ describe('ProbdbService', () => {
     getDefault: () => originalProbModService.getDefault(3)
   }
 
+  const storage = <StorageService>{
+
+  }
+
   beforeEach(() => {
-    service = new ProbdbService(probModifier);
+    service = new ProbdbService(probModifier, storage);
   });
 
   it('should be created', () => {
@@ -21,8 +26,8 @@ describe('ProbdbService', () => {
   });
 
   it('creates new db group', () => {
-    service.create("DBNAME");
-    expect(service.getDB("DBNAME")).toBeTruthy();
+    service.reset("DBNAME");
+    expect(service.getName()).toBe("DBNAME");
   });
 
   it('sets db group', () => {
@@ -63,8 +68,8 @@ describe('ProbdbService', () => {
   })
 
   it('gets probdb names', () => {
-    service.create("A");
-    service.create("B");
+    service.reset("A");
+    service.reset("B");
 
     expect(service.getNames()).toEqual(["Default", "A", "B"])
   })
