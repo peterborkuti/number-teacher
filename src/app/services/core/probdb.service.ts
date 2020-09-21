@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import { StorageService } from '../storage.service';
-import { ProbDB } from './prob-db';
 import { ProbModifierService } from './prob-modifier.service';
 
 @Injectable({
@@ -8,7 +7,17 @@ import { ProbModifierService } from './prob-modifier.service';
 })
 export class ProbdbService {
   constructor(private probModifier: ProbModifierService, private storage: StorageService) {
-    this.reset('Default');
+    this.storage.$storageIsReady.subscribe((ready) => {
+      this.setDb(ready);
+    })
+  }
+
+  private setDb(ready: boolean) {
+    if (ready) {
+      if (this.storage.getNames().length == 0) {
+        this.reset('Default');
+      }
+    }
   }
 
   reset(nameOfDB: string) {
@@ -26,6 +35,22 @@ export class ProbdbService {
 
   getNames() : string[] {
     return this.storage.getNames();
+  }
+
+    /**
+   * The score shows how good us the user based on the probability table
+   * Returns with a number between 0 and 100
+   *
+   * The closer to zero the better
+   */
+  getScore(): number {
+    const flatProbs = [].concat(...this.getProbabilities());
+    let sum = flatProbs.reduce((sum, act) => sum + act, 0);
+
+    sum = Math.max(0, sum);
+    sum = Math.min(1, sum);
+
+    return Math.round(sum * 100); 
   }
 
   getProbabilities(): number[][] {
@@ -68,7 +93,7 @@ export class ProbdbService {
   }
 
   good(exp: number, digit: number) {
-    this.storage.setProb(exp, digit, this.probModifier.bad(this.storage.getProb(exp, digit)));
+    this.storage.setProb(exp, digit, this.probModifier.good(this.storage.getProb(exp, digit)));
   }
 
 }
