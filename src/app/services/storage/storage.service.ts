@@ -25,6 +25,11 @@ export class StorageService {
     });
   }
 
+  clear(): Promise<any> {
+    const promises = this.getNames().map(name => this.storage.clear(name));
+    return Promise.all(promises).then(() => this.active = undefined);
+  }
+
   reset(nameOfDB: string, probabilities: number[][]) {
     const db = this.getOrCreate(nameOfDB);
     db.probabilities = JSON.parse(JSON.stringify(probabilities));

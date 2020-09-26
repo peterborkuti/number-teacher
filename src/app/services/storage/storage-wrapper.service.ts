@@ -29,6 +29,10 @@ export class StorageWrapperService {
     .then(() => db);
   }
 
+  clear(dbName: string): Promise<any> {
+    return this.storage.remove(dbName);
+  }
+
   $getActiveName(): Promise<string> {
     return this.storage.get(this.KEY_ACTIVE);
   } 

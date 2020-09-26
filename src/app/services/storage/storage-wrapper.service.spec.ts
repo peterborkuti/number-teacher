@@ -14,7 +14,7 @@ describe('StorageWrapperService', () => {
           name: '__mydb',
           driverOrder: ['localstorage']
         })
-      ],
+      ]
     });
     service = TestBed.inject(StorageWrapperService);
   });
