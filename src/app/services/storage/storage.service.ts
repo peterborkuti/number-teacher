@@ -1,29 +1,34 @@
 import { Injectable } from '@angular/core';
-import { ProbDB } from './core/prob-db';
-import { Storage } from '@ionic/storage';
+import { ProbDB } from '../core/prob-db';
 import { BehaviorSubject } from 'rxjs';
+import { StorageWrapperService } from './storage-wrapper.service';
 
 @Injectable({
   providedIn: 'root'
 
 })
 export class StorageService {
-  private readonly KEY_ACTIVE = 'ACTIVE_';
-  private readonly KEY_DB = 'DB_';
-  
+ 
   private probdbs: ProbDB[] = [];
   private active: ProbDB;
 
   public $storageIsReady = new BehaviorSubject<boolean>(false);
 
-  constructor(private storage: Storage) {
-    this.loadAll();
+  constructor(private storage: StorageWrapperService) {
+    Promise.all([
+      this.storage.$loadAll(),
+      this.storage.$getActiveName()
+    ]).then(([db, activeName]) => {
+      this.probdbs = db;
+      this.active = this.getDB(activeName);
+      this.$storageIsReady.next(true);
+    });
   }
 
   reset(nameOfDB: string, probabilities: number[][]) {
     const db = this.getOrCreate(nameOfDB);
     db.probabilities = JSON.parse(JSON.stringify(probabilities));
-    this.save(db);
+    this.storage.save(db);
   }
 
   private getOrCreate(nameOfDB = 'Default'): ProbDB {
@@ -31,7 +36,7 @@ export class StorageService {
 
     if (!db) {
       db = this.probdbs[this.probdbs.push(new ProbDB(nameOfDB)) - 1];
-      this.save(db);
+      this.storage.save(db);
     };
 
     return db;
@@ -39,7 +44,7 @@ export class StorageService {
 
   setActive(nameOfDB: string) {
       this.active = this.getOrCreate(nameOfDB);
-      this.saveActiveName(this.active.name);
+      this.storage.saveActiveName(this.active.name);
 
   }
 
@@ -61,7 +66,7 @@ export class StorageService {
     }
 
     this.active.probabilities[exp][digit] = probability;
-    this.save(this.active);
+    this.storage.save(this.active);
   }
 
   private existsProb(exp: number, digit: number): boolean {
@@ -81,29 +86,5 @@ export class StorageService {
     let dbs = this.probdbs.filter(pdb => pdb.name ==  nameOfDB);
 
     return dbs.length === 0 ? undefined : dbs[0];
-  }
-
-  private saveActiveName(name: string) {
-    this.storage.set(this.KEY_ACTIVE, name);
-  }
-
-  private save(probDB: ProbDB) {
-    this.storage.set(this.KEY_DB + probDB.name, probDB);
-  }
-
-  private loadAll() {
-    let activeName = '';
-
-    this.storage.forEach((value, key) => {
-      if (key == this.KEY_ACTIVE) {
-        activeName = value;
-      }
-      else {
-        this.probdbs.push(value)
-      }})
-    .then(() => {
-      this.active = this.getDB(activeName);
-      this.$storageIsReady.next(true)
-    });
   }
 }

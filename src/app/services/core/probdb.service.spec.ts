@@ -1,6 +1,9 @@
 import { ProbdbService } from './probdb.service';
 import { ProbModifierService } from './prob-modifier.service';
-import { StorageService } from '../storage.service';
+import { StorageService } from '../storage/storage.service';
+import { BehaviorSubject } from 'rxjs';
+import { StorageWrapperService } from '../storage/storage-wrapper.service';
+import { TestBed } from '@angular/core/testing';
 
 describe('ProbdbService', () => {
   let service: ProbdbService;
@@ -13,24 +16,20 @@ describe('ProbdbService', () => {
     getDefault: () => originalProbModService.getDefault(3)
   }
 
-  const storage = <StorageService>{
-
-  }
-
   beforeEach(() => {
-    service = new ProbdbService(probModifier, storage);
+    TestBed.configureTestingModule({});
+    service = TestBed.inject(ProbdbService);
   });
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('creates new db group', () => {
-    service.reset("DBNAME");
-    expect(service.getName()).toBe("DBNAME");
+  it('creates Default group when instantiates and store is empty', () => {
+    expect(service.getName()).toBe('Default');
   });
 
-  it('sets db group', () => {
+  it('setActive calls storage.setActive', () => {
     service.setActive("ACTIVE")
     expect(service.getName()).toBe("ACTIVE");
   })
@@ -38,6 +37,7 @@ describe('ProbdbService', () => {
     expect(service.getName()).toBe("Default");
   })
   it('sets digits probs to 1/N or zero for newly created groups', () => {
+    service.reset('Default');
     const probs = service.getProbabilities();
     const N = probs.length * 10;
     const defaultProb = 1.0 / N;
