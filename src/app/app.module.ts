@@ -11,6 +11,7 @@ import { AppRoutingModule } from './app-routing.module';
 import { ASpeech, speechServiceFactory } from './services/speech.service';
 import { TextToSpeech } from '@ionic-native/text-to-speech/ngx';
 import { IonicStorageModule } from '@ionic/storage';
+import { StorageWrapperService } from './services/storage/storage-wrapper.service';
 
 @NgModule({
   declarations: [AppComponent],
@@ -20,7 +21,7 @@ import { IonicStorageModule } from '@ionic/storage';
     StatusBar,
     SplashScreen,
     { provide: RouteReuseStrategy, useClass: IonicRouteStrategy },
-    { provide: ASpeech, useFactory: speechServiceFactory, deps: [[new Optional(), TextToSpeech]] }
+    { provide: ASpeech, useFactory: speechServiceFactory, deps: [[StorageWrapperService], [new Optional(), TextToSpeech]] }
   ],
   bootstrap: [AppComponent]
 })

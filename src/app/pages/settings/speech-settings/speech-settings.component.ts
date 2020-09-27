@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ASpeech, SpeechConfig } from 'src/app/services/speech.service';
 import { Subscription } from 'rxjs';
+import { StorageWrapperService } from 'src/app/services/storage/storage-wrapper.service';
 
 @Component({
   selector: 'speech-settings',
@@ -8,28 +9,35 @@ import { Subscription } from 'rxjs';
   styleUrls: ['./speech-settings.component.scss'],
 })
 export class SpeechSettingsComponent implements OnInit, OnDestroy {
-  private speechConfig: SpeechConfig = <SpeechConfig>{pitch: 0, rate: 0, volume: 0};
+  private speechConfig: SpeechConfig = <SpeechConfig>{pitch: 0, rate: 0, volume: 0, voiceName: ''};
   public voiceNames: string[] = [];
   private voiceName$: Subscription;
 
   set voiceName(name: string) {
     this.speechConfig.voiceName = name;
-    this.speechService.setConfig(this.speechConfig);
+    this.setCommon();
   }
 
   set pitch(p: number) {
     this.speechConfig.pitch = p;
-    this.speechService.setConfig(this.speechConfig);
+    this.setCommon();
   }
 
   set rate(r: number) {
     this.speechConfig.rate = r;
-    this.speechService.setConfig(this.speechConfig);
+    this.setCommon();
   }
 
   set volume(v: number) {
     this.speechConfig.volume = v;
+    this.setCommon();
+  }
+
+  private setCommon() {
     this.speechService.setConfig(this.speechConfig);
+    this.storage.saveSpeechConfig(this.speechConfig);
+
+    this.speechService.say("123");
   }
 
   get pitch(): number {
@@ -49,8 +57,13 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
     return this.speechConfig.voiceName;
   }
 
-  constructor(private speechService: ASpeech) {
+  constructor(private speechService: ASpeech, private storage: StorageWrapperService) {
     this.voiceName$ = this.speechService.$languageNames.subscribe(names => this.voiceNames = names);
+    this.storage.$loadSpeechConfig().then(config => {
+      if (config) {
+        this.speechConfig = config
+        this.setCommon();
+      }});
   }
 
   ngOnInit() {

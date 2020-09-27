@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
 import { ProbDB } from '../core/prob-db';
+import { SpeechConfig } from '../speech.service';
 
 @Injectable({
   providedIn: 'root'
@@ -8,6 +9,7 @@ import { ProbDB } from '../core/prob-db';
 export class StorageWrapperService {
   private readonly KEY_ACTIVE = 'ACTIVE_';
   private readonly KEY_DB = 'DB_';
+  private readonly KEY_CONFIG = 'CONFIG_';
 
   constructor(private storage: Storage) { }
 
@@ -35,6 +37,15 @@ export class StorageWrapperService {
 
   $getActiveName(): Promise<string> {
     return this.storage.get(this.KEY_ACTIVE);
-  } 
+  }
+  
+  $loadSpeechConfig(): Promise<SpeechConfig> {
+    return this.storage.get(this.KEY_CONFIG);
+  }
+
+  saveSpeechConfig(config: SpeechConfig) {
+    this.storage.set(this.KEY_CONFIG, config);
+  }
+
 
 }

@@ -6,6 +6,7 @@ import { ProbDB } from '../core/prob-db';
 
 describe('StorageWrapperService', () => {
   let service: StorageWrapperService;
+  let storage: Storage;
 
   beforeEach(() => {
     TestBed.configureTestingModule({
@@ -17,6 +18,7 @@ describe('StorageWrapperService', () => {
       ]
     });
     service = TestBed.inject(StorageWrapperService);
+    storage = TestBed.inject(Storage);
   });
 
   it('should be created', () => {
@@ -27,7 +29,7 @@ describe('StorageWrapperService', () => {
     service.saveActiveName('ANY_STRING');
     service.$getActiveName().then((name) => {
       expect(name).toBe('ANY_STRING');
-      done();
+      storage.clear().then(() => done());
     });
   });
 
