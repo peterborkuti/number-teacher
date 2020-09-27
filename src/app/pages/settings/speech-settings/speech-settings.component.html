@@ -1,22 +1,20 @@
 <p>
-  <ion-label>Language</ion-label>
   <ion-select [(ngModel)]="voiceName">
     <ion-select-option *ngFor="let name of voiceNames" [value]="name">{{name}}</ion-select-option>
   </ion-select>
-  <ion-label>Pitch</ion-label>
-  <ion-range min="0" max="100" step="10" ticks="10" [(ngModel)]="pitch">
+
+  <ion-range min="0" max="100" step="1" ticks="10" pin [(ngModel)]="pitch">
     <ion-icon size="small" slot="start" name="musical-note"></ion-icon>
     <ion-icon slot="end" name="musical-notes"></ion-icon>
   </ion-range>
 
-  <ion-range min="0" max="100" step="10" ticks="10" [(ngModel)]="rate">
-    <span slot="start">slow</span>
-    <span slot="end">fast</span>
+  <ion-range min="0" max="100" step="1" ticks="10" pin [(ngModel)]="rate">
+    <ion-icon slot="start" name="play-outline"></ion-icon>
+    <ion-icon slot="end" name="play-forward-outline"></ion-icon>
   </ion-range>
 
-  <ion-range min="0" max="100" step="10" ticks="10" [(ngModel)]="volume">
-    <span slot="start">quiet</span>
-    <span slot="end">loud</span>
+  <ion-range min="0" max="100" step="1" ticks="10" pin [(ngModel)]="volume">
+    <ion-icon slot="start" name="volume-low-outline"></ion-icon>
+    <ion-icon slot="end" name="volume-high-outline"></ion-icon>
   </ion-range>
-
 </p>
