@@ -26,6 +26,16 @@ export class ShowProbdbPage implements OnDestroy {
     this.subscription = probdbService.$ready.subscribe( ready => ready && this.init());
   }
 
+  ngOnInit() {
+    console.log("INIT");
+  }
+
+  ionViewDidEnter() {
+    if (this.probdbService.ready) {
+      this.init();
+    }
+  }
+
   init() {
     this.dbNames = this.probdbService.getNames();
     this.selectedDbName = this.probdbService.getName();

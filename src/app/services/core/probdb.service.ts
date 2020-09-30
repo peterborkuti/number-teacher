@@ -9,6 +9,7 @@ import { ProbModifierService } from './prob-modifier.service';
 })
 export class ProbdbService {
   public $ready = new BehaviorSubject(false);
+  public ready = false;
 
   private numGroups: {[key: string]: Function} = {};
 
@@ -18,6 +19,7 @@ export class ProbdbService {
     this.storage.$storageIsReady.subscribe((ready) => {
       this.setDb(ready);
       this.$ready.next(true);
+      this.ready = true;
     })
   }
 
