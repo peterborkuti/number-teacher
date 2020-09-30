@@ -4,20 +4,21 @@
       <ion-menu-button color="dark"></ion-menu-button>
       <ion-back-button></ion-back-button> 
     </ion-buttons>
-    <ion-title>Show probabilities</ion-title>
+    <ion-title><ion-icon name="analytics"></ion-icon></ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
   <ion-list>
     <ion-item>
-  <ion-label>Selected probability database</ion-label>
   <ion-select [(ngModel)]="selectedDbName">
     <ion-select-option *ngFor="let dbName of dbNames" [value]="dbName">{{dbName}}</ion-select-option>
   </ion-select>
 </ion-item>
 </ion-list>
+
 <probdb-map [probabilities]="probdb"></probdb-map>
 
+<ion-button expand="block" color="danger" (click)="reset()">Reset</ion-button>
 
 </ion-content>

@@ -26,10 +26,6 @@ export class ShowProbdbPage implements OnDestroy {
     this.subscription = probdbService.$ready.subscribe( ready => ready && this.init());
   }
 
-  ngOnInit() {
-    console.log("INIT");
-  }
-
   ionViewDidEnter() {
     if (this.probdbService.ready) {
       this.init();
@@ -44,6 +40,11 @@ export class ShowProbdbPage implements OnDestroy {
 
   ngOnDestroy() {
     this.subscription.unsubscribe();
+  }
+
+  reset() {
+    this.probdbService.reset(this.selectedDbName);
+    this.init();
   }
 
 }
