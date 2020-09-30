@@ -8,17 +8,6 @@ export class ProbModifierService {
 
   constructor() { }
 
-  getDefault(maxExponent: number): number[][] {
-    if (maxExponent < 0) maxExponent = 0;
-    maxExponent = Math.floor(maxExponent);
-
-    const N = (maxExponent + 1) * this.DIGITS_NUM;
-    const defaultProb = 1.0/N;
-    
-    return Array(maxExponent + 1).fill(1)
-        .map(() => Array(this.DIGITS_NUM).fill(defaultProb).map(i => i));
-  }
-
   /**
    * cut the asking probability to half
    * @param prob 

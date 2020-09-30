@@ -1,32 +1,46 @@
 import { Injectable } from '@angular/core';
+import { BehaviorSubject } from 'rxjs';
 import { StorageService } from '../storage/storage.service';
+import { NumberGroupsService } from './number-groups.service';
 import { ProbModifierService } from './prob-modifier.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProbdbService {
-  constructor(private probModifier: ProbModifierService, private storage: StorageService) {
+  public $ready = new BehaviorSubject(false);
+
+  private numGroups: {[key: string]: Function} = {};
+
+  constructor(private probModifier: ProbModifierService, private storage: StorageService, numGroupService: NumberGroupsService) {
+    this.numGroups = numGroupService.getServices();
+
     this.storage.$storageIsReady.subscribe((ready) => {
       this.setDb(ready);
+      this.$ready.next(true);
     })
   }
 
   private setDb(ready: boolean) {
     if (ready) {
       if (this.storage.getNames().length == 0) {
-        this.reset('Default');
+        Object.keys(this.numGroups).forEach(ng => this.reset(ng));
+        this.setActive(Object.keys(this.numGroups)[0]);
       }
     }
   }
 
   reset(nameOfDB: string) {
-    this.storage.reset(nameOfDB, this.probModifier.getDefault(3));
-    this.setActive(nameOfDB);
+    const getDefaultValuesFn = this.numGroups[nameOfDB];
+    if (getDefaultValuesFn) {
+      this.storage.reset(nameOfDB, getDefaultValuesFn());
+    }
   }
 
   setActive(nameOfDB: string) {
-    this.storage.setActive(nameOfDB);
+    if (this.storage.getNames().indexOf(nameOfDB) >= 0) {
+      this.storage.setActive(nameOfDB);
+    }
   }
 
   getName(): string {
