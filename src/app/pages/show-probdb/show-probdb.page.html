@@ -12,7 +12,7 @@
   <ion-list>
     <ion-item>
   <ion-label>Selected probability database</ion-label>
-  <ion-select [(value)]="selectedDbName">
+  <ion-select [(ngModel)]="selectedDbName">
     <ion-select-option *ngFor="let dbName of dbNames" [value]="dbName">{{dbName}}</ion-select-option>
   </ion-select>
 </ion-item>

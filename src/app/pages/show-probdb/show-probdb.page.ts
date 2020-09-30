@@ -1,4 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Subscription } from 'rxjs';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 
 @Component({
@@ -6,7 +7,7 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
   templateUrl: './show-probdb.page.html',
   styleUrls: ['./show-probdb.page.scss'],
 })
-export class ShowProbdbPage implements OnInit {
+export class ShowProbdbPage implements OnDestroy {
   set selectedDbName(name: string) {
     this.probdbService.setActive(name);
     this.probdb = this.probdbService.getProbabilities();
@@ -17,15 +18,22 @@ export class ShowProbdbPage implements OnInit {
   }
 
   dbNames: string[] = [];
-
   probdb: number[][] = [[]]
 
-  constructor(private probdbService: ProbdbService) { }
+  private subscription: Subscription;
 
-  ngOnInit() {
+  constructor(private probdbService: ProbdbService) {
+    this.subscription = probdbService.$ready.subscribe( ready => ready && this.init());
+  }
+
+  init() {
     this.dbNames = this.probdbService.getNames();
     this.selectedDbName = this.probdbService.getName();
     this.probdb = this.probdbService.getProbabilities()
+  }
+
+  ngOnDestroy() {
+    this.subscription.unsubscribe();
   }
 
 }
