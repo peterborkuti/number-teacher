@@ -4,11 +4,11 @@
       <ion-menu-button color="dark"></ion-menu-button>
       <ion-back-button></ion-back-button>
     </ion-buttons>
-    <ion-title>learn-nums</ion-title>
+    <ion-title><ion-icon name="school"></ion-icon> {{groupName}}</ion-title>
   </ion-toolbar>
 </ion-header>
 
 <ion-content>
-  <teacher></teacher>
+  <teacher [reset]="reset"></teacher>
 
 </ion-content>

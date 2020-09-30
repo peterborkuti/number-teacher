@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
@@ -13,6 +13,11 @@ import { IonInput } from '@ionic/angular';
 })
 export class TeacherComponent implements OnInit {
   @ViewChild('numberInput') numberInput: IonInput;
+
+  @Input()
+  set reset(tmp: any) {
+    this.newQuestion();
+  }
 
   question: string;
   answer: string;
