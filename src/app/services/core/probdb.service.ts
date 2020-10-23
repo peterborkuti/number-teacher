@@ -61,9 +61,9 @@ export class ProbdbService {
    */
   getScore(): number {
     const flatProbs = [].concat(...this.getProbabilities());
-    const initialProb = 1.0 / flatProbs.length;
-    const probabilityAfterTwoGoodAnswerWithoutBadAnswer = initialProb / 4.0;
-    let goodCount = flatProbs.filter(p => Math.abs(p - probabilityAfterTwoGoodAnswerWithoutBadAnswer) < 0.01).length;
+    const initialProb = 1;
+    const probabilityAfterTwoGoodAnswerWithoutBadAnswer = initialProb/2/2 + 0.01;
+    let goodCount = flatProbs.filter(p => p < probabilityAfterTwoGoodAnswerWithoutBadAnswer).length;
 
     return Math.round(goodCount / flatProbs.length * 100); 
   }

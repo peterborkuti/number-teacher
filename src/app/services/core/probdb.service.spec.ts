@@ -4,16 +4,18 @@ import { StorageService } from '../storage/storage.service';
 import { BehaviorSubject } from 'rxjs';
 import { StorageWrapperService } from '../storage/storage-wrapper.service';
 import { TestBed } from '@angular/core/testing';
+import { NumberGroupsService } from './number-groups.service';
 
 describe('ProbdbService', () => {
   let service: ProbdbService;
+  const numberGroupsService = new NumberGroupsService();
   const originalProbModService = new ProbModifierService();
   const BADVALUE = 10;
   const GOODVALUE = 5;
   const probModifier = <ProbModifierService><unknown>{
     bad: () => BADVALUE,
     good: () => GOODVALUE,
-    getDefault: () => originalProbModService.getDefault(3)
+    getDefault: () => numberGroupsService.getServices()['0..999']
   }
 
   beforeEach(() => {
