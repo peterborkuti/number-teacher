@@ -105,12 +105,19 @@ describe('ProbdbService', () => {
     }
   })
 
-  it('gets number > 10 after answering to numbers 0..9 well', () => {
+  it('answering 15 times good all numbers should be asked', () => {
+    service.reset('0..15');
     service.setActive('0..15');
+    console.log("before:",service.getProbabilities());
     const nums = [0,1,2,3,4,5,6,7,8,9];
     nums.forEach(i => service.good(0, i)); // all will be lowered
 
-    expect(service.getNumberToAsk().length).toBeGreaterThan(1);
+    console.log("after:",service.getProbabilities());
+
+    const numbers: number[] = service.getNumberToAsk();
+    console.log("numbertoask:", numbers.join(''));
+
+    expect(numbers.length).toBeGreaterThan(1);
   })
 
   it('gets probdb names', () => {
