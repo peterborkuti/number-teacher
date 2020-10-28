@@ -6,8 +6,10 @@ import { SplashScreen } from '@ionic-native/splash-screen/ngx';
 import { StatusBar } from '@ionic-native/status-bar/ngx';
 
 import { AppComponent } from './app.component';
+import { IonicStorageModule } from '@ionic/storage';
 
 describe('AppComponent', () => {
+  const storageName = '_' + Math.random();
 
   let statusBarSpy, splashScreenSpy, platformReadySpy, platformSpy;
 
@@ -20,6 +22,12 @@ describe('AppComponent', () => {
     TestBed.configureTestingModule({
       declarations: [AppComponent],
       schemas: [CUSTOM_ELEMENTS_SCHEMA],
+      imports: [
+        IonicStorageModule.forRoot({
+          name: storageName,
+          driverOrder: ['localstorage']
+        })
+      ],
       providers: [
         { provide: StatusBar, useValue: statusBarSpy },
         { provide: SplashScreen, useValue: splashScreenSpy },

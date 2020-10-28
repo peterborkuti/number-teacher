@@ -19,7 +19,7 @@ describe('ProbModifierService', () => {
   })
 
   it('decreases probability when good', () => {
-    expect(service.good(0.5)).toBeLessThan(0.5);
-    expect(service.good(2)).toBeLessThan(1);
+    expect(service.good(1, 0.5)).toBeLessThan(0.5);
+    expect(service.good(1, 2)).toBeLessThan(1);
   })
 });

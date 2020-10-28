@@ -31,7 +31,7 @@ describe('ProbdbMapComponent', () => {
     const row: HTMLTableRowElement = table.rows[1];
     const cells: HTMLCollectionOf<HTMLTableDataCellElement> = row.cells;
 
-    expect(cells[0].innerText).toBe("0");
+    expect(cells[0].innerText).toBe("100");  //10<sup>0</sup>
     expected.forEach((e,i) => expect(cells[i + 1].innerText).toBe('' + e));
   })
 });

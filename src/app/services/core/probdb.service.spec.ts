@@ -5,75 +5,118 @@ import { BehaviorSubject } from 'rxjs';
 import { StorageWrapperService } from '../storage/storage-wrapper.service';
 import { TestBed } from '@angular/core/testing';
 import { NumberGroupsService } from './number-groups.service';
+import { IonicStorageModule } from '@ionic/storage';
+import { Storage } from '@ionic/storage';
 
 describe('ProbdbService', () => {
+  const storageName = '_' + Math.random();
   let service: ProbdbService;
-  const numberGroupsService = new NumberGroupsService();
-  const originalProbModService = new ProbModifierService();
-  const BADVALUE = 10;
-  const GOODVALUE = 5;
-  const probModifier = <ProbModifierService><unknown>{
-    bad: () => BADVALUE,
-    good: () => GOODVALUE,
-    getDefault: () => numberGroupsService.getServices()['0..999']
-  }
+  let numberGroupsService: NumberGroupsService;
+  let storage: Storage;
 
-  beforeEach(() => {
-    TestBed.configureTestingModule({});
+  beforeEach((done) => {
+    TestBed.configureTestingModule({
+      imports: [
+        IonicStorageModule.forRoot({
+          name: storageName,
+          driverOrder: ['localstorage']
+        })
+      ],
+      providers: [ NumberGroupsService, ProbModifierService, StorageWrapperService, StorageService]
+    });
     service = TestBed.inject(ProbdbService);
+    numberGroupsService = TestBed.inject(NumberGroupsService);
+    storage = TestBed.inject(Storage);
+    
+
+    service.$ready.subscribe((ready) => {
+      if (ready) done();
+    })
+
   });
+
+  afterEach((done) => {
+    storage.clear().then(() => done());
+  })
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('creates Default group when instantiates and store is empty', () => {
-    expect(service.getName()).toBe('Default');
+  const getDefaultGroupName = () => {
+    return Object.keys(numberGroupsService.getServices())[0];
+  }
+
+  const getAnyGroupName = () => {
+    const anyValidNotZeroNumber = 1;
+    return Object.keys(numberGroupsService.getServices())[anyValidNotZeroNumber];
+  }
+
+
+
+  it('setst the first group when store is empty', () => {
+      expect(service.getName()).toBe(getDefaultGroupName());
   });
 
   it('setActive calls storage.setActive', () => {
-    service.setActive("ACTIVE")
-    expect(service.getName()).toBe("ACTIVE");
+    const groupName = getAnyGroupName();
+    service.setActive(groupName)
+    expect(service.getName()).toBe(groupName);
   })
-  it('sets db group to default when instantiates', () => {
-    expect(service.getName()).toBe("Default");
+
+  it('sets digits probs to 1 or zero for newly created groups', () => {
+    service.reset(getAnyGroupName());
+    const flatProbs = [].concat(...service.getProbabilities());
+    flatProbs.forEach(p => expect(p == 1 || p == 0).toBeTrue());
   })
-  it('sets digits probs to 1/N or zero for newly created groups', () => {
-    service.reset('Default');
-    const probs = service.getProbabilities();
-    const N = probs.length * 10;
-    const defaultProb = 1.0 / N;
-    probs.forEach(col => col.forEach(p => expect(p).toBeCloseTo(defaultProb)));
-  })
+
   it('gets digits with maximum probabilities', () => {
-    service.bad(0,1);
-    service.bad(1,2);
-    service.bad(2,3);
-    service.bad(3,4);
-    expect(service.getNumberToAsk()).toEqual([4,3,2,1]);
+    service.setActive('0..9');
+    const numbersFrom0To9But5 = [0,1,2,3,4, /*5,*/  6,7,8,9];
+    numbersFrom0To9But5.forEach(i => service.good(0, i));
+    expect(service.getNumberToAsk()).toEqual([5]);
   });
 
   xit('increases probability when time goes by', () => {
     expect(false).toBeTruthy();
   })
 
-  it('calls probModifier and use its value for a digit when answer is bad', () => {
-    service.bad(0, 1);
+  it('probabilities should be lowered after a good answers', () => {
+    service.setActive('0..9');
+    const numbersFrom0To9But5 = [0,1,2,3,4, /*5,*/  6,7,8,9];
+    numbersFrom0To9But5.forEach(i => service.good(0, i));
     const probs = service.getProbabilities();
-    expect(probs[0][1]).toBe(BADVALUE);
+
+    numbersFrom0To9But5.forEach( i => expect(probs[0][i] < 1).toBeTrue());
+    expect(probs[0][5]).toBe(1);
   })
 
-  it('calls probModifier and use its value for a digit when answer is good', () => {
-    service.good(2, 1);
-    const probs = service.getProbabilities();
-    expect(probs[2][1]).toBe(GOODVALUE);
+  it('probabilities shoul be lifted after bad answers', () => {
+    service.setActive('0..9');
+    const nums = [0,1,2,3,4,5,6,7,8,9];
+    nums.forEach(i => service.good(0, i)); // all will be lowered
+    const flatLowProbs = [].concat(...service.getProbabilities());
+
+    nums.forEach(i => service.bad(0, i)); // all will be lifted
+    const flatProbs = [].concat(...service.getProbabilities());
+
+    for(let i = 0; i < flatProbs.length; i++) {
+      expect(flatProbs[i]).toBeGreaterThan(flatLowProbs[i]);
+    }
+  })
+
+  it('gets number > 10 after answering to numbers 0..9 well', () => {
+    service.setActive('0..15');
+    const nums = [0,1,2,3,4,5,6,7,8,9];
+    nums.forEach(i => service.good(0, i)); // all will be lowered
+
+    expect(service.getNumberToAsk().length).toBeGreaterThan(1);
   })
 
   it('gets probdb names', () => {
-    service.reset("A");
-    service.reset("B");
+    const names = Object.keys(numberGroupsService.getServices()).sort();
 
-    expect(service.getNames()).toEqual(["Default", "A", "B"])
+    expect(service.getNames().sort()).toEqual(names)
   })
 
 });

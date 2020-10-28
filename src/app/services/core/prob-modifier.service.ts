@@ -12,10 +12,12 @@ export class ProbModifierService {
    * cut the asking probability to half
    * @param prob 
    */
-  good(prob: number): number {
+  good(exp: number, prob: number): number {
     prob = Math.max(Math.min(1, prob ? prob : 1), 0);
 
-    return prob / 2.0;
+    // the highest the exponent, the lesser the probability will be lowered
+
+    return prob - (prob / (exp+2));
   }
 
   /**

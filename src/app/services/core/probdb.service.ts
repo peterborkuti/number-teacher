@@ -17,9 +17,11 @@ export class ProbdbService {
     this.numGroups = numGroupService.getServices();
 
     this.storage.$storageIsReady.subscribe((ready) => {
-      this.setDb(ready);
-      this.$ready.next(true);
-      this.ready = true;
+      if (ready)  {
+        this.setDb(true);
+        this.$ready.next(true);
+        this.ready = true;
+      }
     })
   }
 
@@ -79,7 +81,7 @@ export class ProbdbService {
    * If it contains only zeroes, it will return the last digit
    */
   getNumberToAsk(): number[] {
-    let digits = this.getProbabilities().map(exp => this.getMaxIndex(exp)).reverse();
+    let digits = this.getProbabilities().map(exp => this.getRandomOneFromMaxIndexes(exp)).reverse();
     console.log('Raw question:', digits.join(''));
 
     while (digits.length > 1 && digits[0] == 0) {
@@ -89,7 +91,7 @@ export class ProbdbService {
     return digits;
   }
 
-  private getMaxIndex(arr: number[], delta = 0.01): number {
+  private getMaxValue(arr: number[]): number {
     let maxValue = -1;
 
     for (let i = 0; i < arr.length; i++) {
@@ -98,17 +100,35 @@ export class ProbdbService {
       }
     }
 
-    const maxIndexes = arr.map((v,i) => ({value:v, index: i})).filter(vi => Math.abs(vi.value - maxValue) < delta).map(vi => vi.index);
+    return maxValue;
+  }
+
+  private getRandomOneFromMaxIndexes(arr: number[], delta = 0.01): number {
+    const maxValue = this.getMaxValue(arr);
+
+    const maxIndexes = arr.map((v,i) => ({value:v, index: i}))
+        .filter(vi => Math.abs(vi.value - maxValue) < delta)
+        .map(vi => vi.index);
 
     return maxIndexes[Math.floor(Math.random()*maxIndexes.length)];
   }
 
   bad(exp: number, digit: number) {
     this.storage.setProb(exp, digit, this.probModifier.bad(this.storage.getProb(exp, digit)));
+    this.setMaxExpZeroDigitProb(exp);
   }
 
   good(exp: number, digit: number) {
-    this.storage.setProb(exp, digit, this.probModifier.good(this.storage.getProb(exp, digit)));
+    this.storage.setProb(exp, digit, this.probModifier.good(exp, this.storage.getProb(exp, digit)));
+    this.setMaxExpZeroDigitProb(exp);
+  }
+
+  private setMaxExpZeroDigitProb(exp: number) {
+    const probs = this.storage.getProbabilities();
+    if (exp == probs.length) {
+      const maxVal = this.getMaxValue(probs[exp-1]);
+      this.storage.setProb(exp, 0, maxVal);
+    }
   }
 
 }

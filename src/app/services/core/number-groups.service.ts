@@ -28,10 +28,13 @@ export function exponent(maxExponent: number): number[][] {
   if (maxExponent < 0) maxExponent = 0;
   maxExponent = Math.floor(maxExponent);
 
-  const N = (maxExponent + 1) * DIGITS_NUM;
   const defaultProb = 1;
-  
-  return Array(maxExponent + 1).fill(1)
-      .map(() => Array(DIGITS_NUM).fill(defaultProb).map(i => i));
+
+  const probs = Array(maxExponent + 1).fill(1)
+    .map(() => Array(DIGITS_NUM).fill(defaultProb).map(i => i));
+
+  if (maxExponent>0) probs[maxExponent][0] = 0;
+
+  return probs;
 }
 
