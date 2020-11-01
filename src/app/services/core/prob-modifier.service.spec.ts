@@ -15,7 +15,8 @@ describe('ProbModifierService', () => {
   });
 
   it('increases probability when bad', () => {
-    expect(service.bad(0.5)).toBeGreaterThan(0.5);
+    expect(service.bad(0.2)).toBeCloseTo(0.6);
+    expect(service.bad(0.5)).toBeCloseTo(0.75);
   })
 
   it('decreases probability when good', () => {

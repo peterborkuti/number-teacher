@@ -12,7 +12,7 @@ export class NumberGroupsService {
       '0..99' : exponent.bind(null, 1),
       '0..999' : exponent.bind(null, 2),
       '0..9999' : exponent.bind(null, 3),
-      '0..15' : () => {
+      '0..19' : () => {
         return [
                 [1,1,1,1,1,1,1,1,1,1],
                 [0,1,0,0,0,0,0,0,0,0]

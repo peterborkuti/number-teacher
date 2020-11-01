@@ -1,95 +1,67 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { ProbDB } from '../core/prob-db';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { StorageWrapperService } from './storage-wrapper.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
-
 })
-export class StorageService {
- 
-  private probdbs: ProbDB[] = [];
-  private active: ProbDB;
+export class StorageService implements OnDestroy{
+  private probdb: ProbDB;
 
-  public $storageIsReady = new BehaviorSubject<boolean>(false);
+  private unsubscribe = new Subject();
 
   constructor(private storage: StorageWrapperService) {
-    Promise.all([
-      this.storage.$loadAll(),
-      this.storage.$getActiveName()
-    ]).then(([db, activeName]) => {
-      this.probdbs = db;
-      this.active = this.getDB(activeName);
-      this.$storageIsReady.next(true);
-    });
+    storage.watchActiveProbDB().pipe(takeUntil(this.unsubscribe)).subscribe(db => this.probdb = db);
   }
 
-  clear(): Promise<any> {
-    const promises = this.getNames().map(name => this.storage.clear(name));
-    return Promise.all(promises).then(() => this.active = undefined);
+  clearAll() {
+    this.storage.clearStorage();
   }
 
-  reset(nameOfDB: string, probabilities: number[][]) {
-    const db = this.getOrCreate(nameOfDB);
-    db.probabilities = JSON.parse(JSON.stringify(probabilities));
-    this.storage.save(db);
-  }
-
-  private getOrCreate(nameOfDB = 'Default'): ProbDB {
-    let db = this.getDB(nameOfDB);
-
-    if (!db) {
-      db = this.probdbs[this.probdbs.push(new ProbDB(nameOfDB)) - 1];
-      this.storage.save(db);
-    };
-
-    return db;
+  save(nameOfDB: string, probabilities: number[][]) {
+    this.storage.save(new ProbDB(nameOfDB, JSON.parse(JSON.stringify(probabilities))));
   }
 
   setActive(nameOfDB: string) {
-      this.active = this.getOrCreate(nameOfDB);
-      this.storage.saveActiveName(this.active.name);
-
+      this.storage.setActiveName(nameOfDB);
   }
 
   getName(): string {
-    return this.active ? this.active.name : ''; 
+    return this.probdb.name;
   }
 
-  getNames() : string[] {
-    return this.probdbs.map(db => db.name);
+  watchNames(): Observable<string[]> {
+    return this.storage.watchProbDBNames();
   }
 
-  getProbabilities(): number[][] {
-    return (this.active && this.active.probabilities) ? JSON.parse(JSON.stringify(this.active.probabilities)) : [[]];
+  watchActiveProbDB(): Observable<ProbDB> {
+    return this.storage.watchActiveProbDB();
+  }
+
+  watchNoSavedProbDBs(): Observable<boolean> {
+    return this.storage.watchNoSavedProbDBs();
   }
 
   setProb(exp: number, digit: number, probability: number) {
-    if (!this.existsProb(exp, digit)) {
-      return;
+    if (this.existsProb(exp, digit)) {
+      this.probdb.probabilities[exp][digit] = probability;
+      this.storage.save(this.probdb);
     }
-
-    this.active.probabilities[exp][digit] = probability;
-    this.storage.save(this.active);
   }
 
   private existsProb(exp: number, digit: number): boolean {
-    return !!this.active.probabilities[exp] && !!this.active.probabilities[exp][digit];
+    return !!this.probdb.probabilities[exp] && (this.probdb.probabilities[exp].length > digit);
   }
 
   getProb(exp: number, digit: number): number {
-    return this.existsProb(exp, digit) ? this.active.probabilities[exp][digit] : 0;
+    return this.existsProb(exp, digit) ? this.probdb.probabilities[exp][digit] : 0;
   }
 
-
-  /**
-   * returns with a ProbDB if its name is equal to nameOfDB else undefined
-   * @param nameOfDB name of ProbDB database
-   */
-  getDB(nameOfDB: string): ProbDB | undefined {
-    let dbs = this.probdbs.filter(pdb => pdb.name ==  nameOfDB);
-
-    return dbs.length === 0 ? undefined : dbs[0];
+  ngOnDestroy() {
+    this.unsubscribe.next();
+    this.unsubscribe.complete();
   }
+
 }

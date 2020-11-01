@@ -58,12 +58,13 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
   }
 
   constructor(private speechService: ASpeech, private storage: StorageWrapperService) {
+
     this.voiceName$ = this.speechService.$languageNames.subscribe(names => this.voiceNames = names);
-    this.storage.$loadSpeechConfig().then(config => {
+    this.storage.watchSpeechConfig().subscribe((config) => {
       if (config) {
         this.speechConfig = config
         this.setCommon();
-      }});
+    }});
   }
 
   ngOnInit() {

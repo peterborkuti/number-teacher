@@ -11,14 +11,13 @@
 <ion-content>
   <ion-list>
     <ion-item>
-  <ion-select [(ngModel)]="selectedDbName">
-    <ion-select-option *ngFor="let dbName of dbNames" [value]="dbName">{{dbName}}</ion-select-option>
+  <ion-select [ngModel]="selectedDbName|async" (ngModelChange)="setSelectedDbName($event)">
+    <ion-select-option *ngFor="let dbName of (service.watchNames()|async)" [value]="dbName">{{dbName}}</ion-select-option>
   </ion-select>
 </ion-item>
 </ion-list>
 
-<probdb-map [probabilities]="probdb"></probdb-map>
+<probdb-map [probabilities]="service.watchProbabilities()|async"></probdb-map>
 
-<ion-button expand="block" color="danger" (click)="reset()">Reset</ion-button>
-
+<ion-button expand="block" color="warning" (click)="reset()">Reset this database</ion-button>
 </ion-content>

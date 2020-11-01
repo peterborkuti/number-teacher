@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Storage } from '@ionic/storage';
-import { BehaviorSubject, Observable } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { filter } from 'rxjs/operators';
 import { ProbDB } from '../core/prob-db';
 import { SpeechConfig } from '../speech.service';
 
@@ -15,6 +16,7 @@ export class StorageWrapperService {
   private speechConfig$ = new BehaviorSubject<SpeechConfig>(new SpeechConfig());
   private probdbNames$ = new BehaviorSubject<string[]>([]);
   private activeProbDB$ = new BehaviorSubject<ProbDB>(new ProbDB());
+  private noSavedProbDBs$ = new Subject<boolean>();
 
   constructor(private storage: Storage) {
     storage.ready().then(() => {
@@ -32,39 +34,47 @@ export class StorageWrapperService {
           }
           this.setActiveName(activeName);
         }
+        else {
+          this.noSavedProbDBs$.next(true);
+        }
       })
     })
   }
 
   setActiveName(name: string) {
-    this.getProbDB(name)
-      .then(probDB => {
-          this.storage.set(this.KEY_ACTIVE, name);
-          this.activeProbDB$.next(probDB);
-        }
-      )
+    this.storage.ready().then(() => {
+      this.getProbDB(name)
+        .then(probDB => {
+            this.storage.set(this.KEY_ACTIVE, name);
+            this.activeProbDB$.next(probDB);
+          }
+    )})
   }
 
   private getProbDB(name: string): Promise<ProbDB> {
-    return this.storage.get(this.KEY_DB + name);
+    return this.storage.ready().then(() => this.storage.get(this.KEY_DB + name));
   }
 
   save(probDB: ProbDB) {
-    const setDB = this.storage.set(this.KEY_DB + probDB.name, probDB);
-    const getActiveName = this.storage.get(this.KEY_ACTIVE);
+    this.storage.ready().then(() => {
+      const setDB = this.storage.set(this.KEY_DB + probDB.name, probDB);
+      const getActiveName = this.storage.get(this.KEY_ACTIVE);
 
-    Promise.all([setDB, getActiveName])
-      .then(([tmp, activeName]) => {
-        if (probDB.name == activeName) {
-          this.activeProbDB$.next(probDB);
-        };
-        this.refreshProbDBNames();
-      });
+      Promise.all([setDB, getActiveName])
+        .then(([tmp, activeName]) => {
+          if (probDB.name == activeName) {
+            this.activeProbDB$.next(probDB);
+          };
+          this.refreshProbDBNames();
+        });
+    })
   }
 
   private refreshProbDBNames() {
-    this.storage.keys().then((keys) => {
-      this.probdbNames$.next(this.getDBNames(keys));
+    this.storage.ready().then(() => {
+      this.storage.keys().then((keys) => {
+        this.probdbNames$.next(this.getDBNames(keys));
+      })
     })
   }
 
@@ -79,28 +89,37 @@ export class StorageWrapperService {
   }
 
   clearStorage() {
-    this.storage.clear().then(() => {
-      this.activeProbDB$.next(new ProbDB());
-      this.probdbNames$.next([]);
-      this.speechConfig$.next(new SpeechConfig());
-    });
+    this.storage.ready().then(() => {
+      this.storage.clear().then(() => {
+        this.activeProbDB$.next(new ProbDB());
+        this.probdbNames$.next([]);
+        this.speechConfig$.next(new SpeechConfig());
+        this.noSavedProbDBs$.next(true);
+      })
+    })
   }
 
   watchProbDBNames(): Observable<string[]> {
-    return this.probdbNames$;
+    return this.probdbNames$.pipe(filter(names => names && names.length > 0));
   }
 
   watchActiveProbDB(): Observable<ProbDB> {
-    return this.activeProbDB$;
+    return this.activeProbDB$.pipe(filter(db => !!db && !!db.name));
   }
 
   watchSpeechConfig(): Observable<SpeechConfig> {
     return this.speechConfig$;
-  } 
+  }
+
+  watchNoSavedProbDBs(): Observable<boolean> {
+    return this.noSavedProbDBs$;
+  }
 
   saveSpeechConfig(config: SpeechConfig) {
-    this.storage.set(this.KEY_CONFIG, config)
-      .then((config) => this.speechConfig$.next(config));
+    this.storage.ready().then(() => {
+      this.storage.set(this.KEY_CONFIG, config)
+        .then((config) => this.speechConfig$.next(config));
+    })
   }
 
 }

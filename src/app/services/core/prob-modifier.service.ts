@@ -28,7 +28,7 @@ export class ProbModifierService {
   bad(prob: number): number {
     prob = Math.min(Math.max(0, prob ? prob : 0), 1);
   
-    return Math.max(prob  + prob / 2, 1);
+    return Math.min(prob  + (1.0-prob) / 2.0, 1);
   }
 
 }

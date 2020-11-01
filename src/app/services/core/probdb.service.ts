@@ -1,58 +1,67 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Observable, Subject } from 'rxjs';
+import { filter, map, takeUntil } from 'rxjs/operators';
 import { StorageService } from '../storage/storage.service';
 import { NumberGroupsService } from './number-groups.service';
+import { ProbDB } from './prob-db';
 import { ProbModifierService } from './prob-modifier.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class ProbdbService {
-  public $ready = new BehaviorSubject(false);
-  public ready = false;
-
   private numGroups: {[key: string]: Function} = {};
+  private probdb : ProbDB;
 
-  constructor(private probModifier: ProbModifierService, private storage: StorageService, numGroupService: NumberGroupsService) {
+  private score$ = new BehaviorSubject<number>(0);
+  private name$ = new BehaviorSubject<string>('');
+
+  private unsubscribe = new Subject();
+
+  constructor(
+    private probModifier: ProbModifierService,
+    private storage: StorageService,
+    numGroupService: NumberGroupsService) {
+
     this.numGroups = numGroupService.getServices();
 
-    this.storage.$storageIsReady.subscribe((ready) => {
-      if (ready)  {
-        this.setDb(true);
-        this.$ready.next(true);
-        this.ready = true;
-      }
-    })
+    this.storage.watchNoSavedProbDBs().pipe(takeUntil(this.unsubscribe)).
+      subscribe((noDbs) => {if (noDbs) this.setDb()});
+
+    this.storage.watchActiveProbDB().pipe(takeUntil(this.unsubscribe),filter(db => !!db && !!db.name))
+      .subscribe(db => {
+        this.probdb = db;
+        this.setMaxExpZeroDigitProb();
+        this.setScore();
+        this.name$.next(db.name);
+      });
   }
 
-  private setDb(ready: boolean) {
-    if (ready) {
-      if (this.storage.getNames().length == 0) {
-        Object.keys(this.numGroups).forEach(ng => this.reset(ng));
-        this.setActive(Object.keys(this.numGroups)[0]);
-      }
+  setDb() {
+      Object.keys(this.numGroups).forEach(ng => this.reset(ng));
+      this.setActive(Object.keys(this.numGroups)[0]);
+  }
+
+  reset(nameOfDB?: string) {
+    if (!nameOfDB) {
+      nameOfDB = this.probdb.name;
     }
-  }
-
-  reset(nameOfDB: string) {
     const getDefaultValuesFn = this.numGroups[nameOfDB];
     if (getDefaultValuesFn) {
-      this.storage.reset(nameOfDB, getDefaultValuesFn());
+      this.storage.save(nameOfDB, getDefaultValuesFn());
     }
   }
 
   setActive(nameOfDB: string) {
-    if (this.storage.getNames().indexOf(nameOfDB) >= 0) {
       this.storage.setActive(nameOfDB);
-    }
   }
 
-  getName(): string {
-    return this.storage.getName(); 
+  watchName(): Observable<string> {
+    return this.name$; 
   }
 
-  getNames() : string[] {
-    return this.storage.getNames();
+  watchNames() : Observable<string[]> {
+    return this.storage.watchNames();
   }
 
     /**
@@ -61,17 +70,22 @@ export class ProbdbService {
    *
    * The closer to zero the better
    */
-  getScore(): number {
-    const flatProbs = [].concat(...this.getProbabilities());
+  private setScore() {
+    const flatProbs = [].concat(...this.probdb.probabilities);
     const initialProb = 1;
     const probabilityAfterTwoGoodAnswerWithoutBadAnswer = initialProb/2/2 + 0.01;
-    let goodCount = flatProbs.filter(p => p < probabilityAfterTwoGoodAnswerWithoutBadAnswer).length;
+    const goodCount = flatProbs.filter(p => p < probabilityAfterTwoGoodAnswerWithoutBadAnswer).length;
+    const score = Math.round(goodCount / flatProbs.length * 100);
 
-    return Math.round(goodCount / flatProbs.length * 100); 
+    this.score$.next(score); 
   }
 
-  getProbabilities(): number[][] {
-    return this.storage.getProbabilities();
+  watchScore(): Observable<number> {
+    return this.score$;
+  }
+
+  watchProbabilities(): Observable<number[][]> {
+    return this.storage.watchActiveProbDB().pipe(map(db => db.probabilities));
   }
 
   /**
@@ -81,14 +95,15 @@ export class ProbdbService {
    * If it contains only zeroes, it will return the last digit
    */
   getNumberToAsk(): number[] {
-    let digits = this.getProbabilities().map(exp => this.getRandomOneFromMaxIndexes(exp)).reverse();
+    let digits = this.probdb.probabilities.map(exp => this.getRandomOneFromMaxIndexes(exp)).reverse();
     console.log('Raw question:', digits.join(''));
 
     while (digits.length > 1 && digits[0] == 0) {
       digits = digits.slice(1)
     }
 
-    return digits;
+    const len = Math.floor(Math.random() * digits.length) + 1;
+    return digits.slice(-len);
   }
 
   private getMaxValue(arr: number[]): number {
@@ -105,6 +120,7 @@ export class ProbdbService {
 
   private getRandomOneFromMaxIndexes(arr: number[], delta = 0.01): number {
     const maxValue = this.getMaxValue(arr);
+    delta = Math.min(delta, maxValue / 100.0); 
 
     const maxIndexes = arr.map((v,i) => ({value:v, index: i}))
         .filter(vi => Math.abs(vi.value - maxValue) < delta)
@@ -114,21 +130,20 @@ export class ProbdbService {
   }
 
   bad(exp: number, digit: number) {
-    this.storage.setProb(exp, digit, this.probModifier.bad(this.storage.getProb(exp, digit)));
-    this.setMaxExpZeroDigitProb(exp);
+    const prob = this.storage.getProb(exp, digit);
+    const newProb = this.probModifier.bad(prob);
+    this.storage.setProb(exp, digit, newProb);
   }
 
   good(exp: number, digit: number) {
     this.storage.setProb(exp, digit, this.probModifier.good(exp, this.storage.getProb(exp, digit)));
-    this.setMaxExpZeroDigitProb(exp);
   }
 
-  private setMaxExpZeroDigitProb(exp: number) {
-    const probs = this.storage.getProbabilities();
-    if (exp == probs.length) {
-      const maxVal = this.getMaxValue(probs[exp-1]);
-      this.storage.setProb(exp, 0, maxVal);
-    }
+  private setMaxExpZeroDigitProb() {
+    const probs = this.probdb.probabilities;
+    const exp = probs.length;
+    const maxVal = this.getMaxValue(probs[exp-1]);
+    this.storage.setProb(exp, 0, maxVal);
   }
 
 }

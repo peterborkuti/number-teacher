@@ -15,8 +15,7 @@ describe('TeacherComponent', () => {
     say: (a,b) => void(0)
   };
   const probdbService = <ProbdbService>{
-    getNumberToAsk: () => QUESTION.split('').map(c => +c),
-    getScore: () => 1
+    getNumberToAsk: () => QUESTION.split('').map(c => +c)
   };
   const answerCheckerService = <AnswerCheckerService>{};
 

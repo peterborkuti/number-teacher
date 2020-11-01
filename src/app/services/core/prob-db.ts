@@ -3,7 +3,8 @@ export class ProbDB {
     id: string = '' + Date.now();
     probabilities: number[][] = [[]];
 
-    constructor(name?: string) {
-        this.name = name ? name : 'Default';
+    constructor(name?: string, probs?: number[][]) {
+        this.name = name ? name : '';
+        this.probabilities = probs ? probs : [[]];
     }
 }

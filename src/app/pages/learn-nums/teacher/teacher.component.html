@@ -11,7 +11,7 @@
 
   <ion-button *ngIf="wrongAnswer" color="danger" name="sayAnswer" (click)="say(answer)"><ion-icon name="megaphone"></ion-icon></ion-button>
 
-  <ion-range [disabled]="true" min="0" max="100" step="1" ticks="10" [(ngModel)]="score">
+  <ion-range [disabled]="true" min="0" max="100" step="1" ticks="10" [(ngModel)]="probdbService.watchScore()|async">
     <span slot="start"><ion-icon name="rainy"></ion-icon></span>
     <span slot="end"><ion-icon name="happy"></ion-icon></span>
   </ion-range>

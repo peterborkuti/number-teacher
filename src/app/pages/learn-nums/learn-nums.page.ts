@@ -7,32 +7,14 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
   templateUrl: './learn-nums.page.html',
   styleUrls: ['./learn-nums.page.scss'],
 })
-export class LearnNumsPage implements OnInit, OnDestroy {
+export class LearnNumsPage {
   reset = 0;
-  groupName = '';
 
-  private subscription: Subscription;
-
-  constructor(private probdbService: ProbdbService) {
-    this.subscription = this.probdbService.$ready.subscribe(ready => ready && this.init());
-  }
-
-  ngOnInit() {
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
+  constructor(private service: ProbdbService) {
   }
 
   init() {
-    this.groupName = this.probdbService.getName();
     this.reset = this.reset % 2 + 1;
-  }
-
-  ionViewDidEnter() {
-    if (this.probdbService.ready) {
-      this.init();
-    }
   }
 
 }

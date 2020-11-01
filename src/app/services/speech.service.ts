@@ -105,7 +105,7 @@ class Html5Speech extends ASpeech {
   constructor(private api: SpeechSynthesis, private storage: StorageWrapperService) {
     super();
     api.onvoiceschanged = () => this.setVoices();
-    this.storage.$loadSpeechConfig().then( config => {
+    this.storage.watchSpeechConfig().subscribe((config) => {
       if (config) {
         this.setConfig(config);
       }

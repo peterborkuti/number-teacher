@@ -1,120 +1,99 @@
 import { Type } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { IonicStorageModule, Storage } from '@ionic/storage';
+import { filter, first } from 'rxjs/operators';
 import { ProbDB } from '../core/prob-db';
 
 import { StorageService } from './storage.service';
 
 describe('StorageService', () => {
+  const storageName = '_' + Math.random();
+
   let service: StorageService;
+  let storage: Storage;
 
-  let localstorage: Storage;
-
-  beforeEach(() => {
+  beforeEach((done) => {
     TestBed.configureTestingModule({
       imports: [
         IonicStorageModule.forRoot({
-          name: '__mydb',
+          name: storageName,
           driverOrder: ['localstorage']
         })
       ]
     });
     service = TestBed.inject(StorageService);
-    localstorage = TestBed.inject(Storage);
+    storage = TestBed.inject(Storage);
+
+    storage.ready().then(() => done());
   });
+
+  afterEach((done) => {
+    storage.clear().then(() => done());
+  })
 
   it('should be created', () => {
     expect(service).toBeTruthy();
   });
 
-  it('storage will be ready after a while', (done) => {
-    service.$storageIsReady.subscribe(ready => {
-      if (!ready) return;
-      expect(ready).toBeTrue();
+  it('saves db name', (done) => {
+    const db = new ProbDB('ANY_NAME');
+
+    service.watchNames().pipe(filter(names => names.indexOf('ANY_NAME')>-1)).subscribe(() => {
+      expect(true).toBeTrue();
+      done();
+    });
+
+    service.save(db.name, db.probabilities);
+  });
+
+  it('saves db', (done) => {
+    const ANY_NUM = 10;
+    const expected = new ProbDB('ANY_NAME', [[ANY_NUM]]);
+
+    service.watchActiveProbDB().pipe(filter(db => db && (db.name == 'ANY_NAME'))).subscribe((db) => {
+      expect(db.probabilities).toEqual(expected.probabilities);
       done();
     })
-  });
 
-  it('reset sets id and saves probabilities', (done) => {
-    const ANY_NUM = 10;
-    const expected: ProbDB = { id: '', name: 'ANY_NAME', probabilities: [[ANY_NUM]]};
-    service.$storageIsReady.subscribe(ready => {
-      if (!ready) return;
-
-      service.reset(expected.name, expected.probabilities);
-      const db = service.getDB(expected.name);
-
-      expect(db.name).toEqual(expected.name);
-      expect(db.probabilities).toEqual(expected.probabilities);
-      expect(db.id).toBeTruthy();
-
-      localstorage.clear().then(() => done());
-    })
-  });
-
-  it('sets active db', (done) => {
-    service.$storageIsReady.subscribe(ready => {
-      if (!ready) return;
-
-      service.setActive('ANY_NAME');
-      expect(service.getName()).toBe('ANY_NAME');
-      
-      localstorage.clear().then(() => done());
-    })
-  });
-
-  it('gets probabilities and it is a copy not a reference', (done) => {
-    const ANY_NUM = 10;
-    const expected: ProbDB = { id: '', name: 'ANY_NAME', probabilities: [[ANY_NUM]]};
-    service.$storageIsReady.subscribe(ready => {
-      if (!ready) return;
-
-      service.reset(expected.name, expected.probabilities);
+    service.watchNames().pipe(filter(n => n.indexOf('ANY_NAME')>-1), first()).subscribe(() =>{
       service.setActive(expected.name);
-
-      const probs = service.getProbabilities();
-      expect(probs).toEqual(expected.probabilities);
-
-      probs[0][0] = ANY_NUM + 1;
-
-      const probsAfterCopyMod = service.getProbabilities();
-      expect(probsAfterCopyMod).toEqual(expected.probabilities);
-      
-      localstorage.clear().then(() => done());
     })
+
+    service.save(expected.name, expected.probabilities);
   });
 
-  it('sets probability if it is exists', (done) => {
-    const ANY_NUM = 10;
-    const expected: ProbDB = { id: '', name: 'ANY_NAME', probabilities: [[ANY_NUM]]};
-    service.$storageIsReady.subscribe(ready => {
-      if (!ready) return;
+  it('refreshes only active', (done) => {
+    const db1 = new ProbDB('NAME1');
+    const db2 = new ProbDB('NAME2');
 
-      service.reset(expected.name, expected.probabilities);
-      service.setActive(expected.name);
-
-      // not existing exponent and digit
-      service.setProb(10, 10, 1);
-      expect(service.getProb(10, 10)).toEqual(0);
-
-      service.setProb(0, 0, ANY_NUM + 1);
-      expect(service.getProb(0, 0)).toEqual(ANY_NUM + 1);
-
-      localstorage.clear().then(() => done());
+    service.watchActiveProbDB().subscribe((db) => {
+      expect(db.name).not.toEqual('NAME1');
+      if (db.name == 'NAME2') done();
     })
+
+    service.watchNames().pipe(filter(n => n.indexOf(db2.name)>-1), first()).subscribe(() =>{
+      service.setActive(db2.name);
+    })
+
+    service.save(db1.name, db1.probabilities);
+    service.save(db2.name, db2.probabilities);
   });
 
-  it('gets db names', (done) => {
-      service.$storageIsReady.subscribe(ready => {
-        if (!ready) return;
+  it('gets probability', (done) => {
+    const db = new ProbDB('DBNAME', [[0.1, 0.2, 0.3, 0.4], [0.5, 0.6, 0.7, 0.8]]);
 
-        service.reset('NAME1', [[]]);
-        service.reset('NAME2', [[]]);
+    service.watchActiveProbDB().pipe(filter(db => db.name=='DBNAME'), first()).subscribe((db) => {
+      expect(service.getProb(0, 2)).toBe(0.3);
+      done();
+    })
 
-        expect(service.getNames().sort()).toEqual(['NAME1', 'NAME2']);
+    service.watchNames().pipe(filter(n => n.indexOf(db.name)>-1), first()).subscribe(() =>{
+      service.setActive(db.name);
+    })
 
-        localstorage.clear().then(() => done());
-      })
-  });
+    service.save(db.name, db.probabilities);
+  })
 
-});
+
+
+})

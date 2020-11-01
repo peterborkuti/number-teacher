@@ -21,7 +21,6 @@ export class TeacherComponent implements OnInit {
 
   question: string;
   answer: string;
-  score = 100;
 
   wrongAnswer = true;
   answerIsEmpty = true;
@@ -41,7 +40,6 @@ export class TeacherComponent implements OnInit {
   }
 
   newQuestion() {
-    this.score = this.probdbService.getScore();
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';
