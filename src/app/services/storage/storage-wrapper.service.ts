@@ -108,7 +108,7 @@ export class StorageWrapperService {
   }
 
   watchSpeechConfig(): Observable<SpeechConfig> {
-    return this.speechConfig$;
+    return this.speechConfig$.pipe(filter(config => !!config));
   }
 
   watchNoSavedProbDBs(): Observable<boolean> {

@@ -6,6 +6,7 @@ import { ASpeech } from 'src/app/services/speech.service';
 import { FormsModule } from '@angular/forms';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
+import { of } from 'rxjs';
 
 describe('TeacherComponent', () => {
   const QUESTION = '12345';
@@ -15,7 +16,8 @@ describe('TeacherComponent', () => {
     say: (a,b) => void(0)
   };
   const probdbService = <ProbdbService>{
-    getNumberToAsk: () => QUESTION.split('').map(c => +c)
+    getNumberToAsk: () => QUESTION.split('').map(c => +c),
+    watchScore: () => of(0)
   };
   const answerCheckerService = <AnswerCheckerService>{};
 

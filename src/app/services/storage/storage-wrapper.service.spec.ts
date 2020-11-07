@@ -5,7 +5,7 @@ import { IonicStorageModule, Storage } from '@ionic/storage';
 import { ProbDB } from '../core/prob-db';
 import { SpeechConfig } from '../speech.service';
 
-import { filter } from 'rxjs/operators';
+import { filter, first } from 'rxjs/operators';
 
 describe('StorageWrapperService', () => {
   const storageName = '_' + Math.random();
@@ -72,7 +72,8 @@ describe('StorageWrapperService', () => {
     const probdb = new ProbDB('ACTIVENAME');
     service.save(probdb);
 
-    service.setActiveName('ACTIVENAME')
+    service.watchProbDBNames().pipe(filter(names => names.indexOf('ACTIVENAME')>-1), first())
+      .subscribe(() => service.setActiveName('ACTIVENAME'));
   });
 
   it('refreshes active probdb', (done) => {
@@ -86,7 +87,8 @@ describe('StorageWrapperService', () => {
     const probdb = new ProbDB('ACTIVENAME');
     service.save(probdb);
 
-    service.setActiveName('ACTIVENAME')
+    service.watchProbDBNames().pipe(filter(names => names.indexOf('ACTIVENAME')>-1), first())
+      .subscribe(() => service.setActiveName('ACTIVENAME'));
   });
 
 });

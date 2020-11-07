@@ -66,12 +66,14 @@ export class ProbdbService {
 
     /**
    * The score shows how good us the user based on the probability table
+   * cells with 0 value will never be in questions, so they are filtered out
+   * when score is counted
    * Returns with a number between 0 and 100
    *
    * The closer to zero the better
    */
   private setScore() {
-    const flatProbs = [].concat(...this.probdb.probabilities);
+    const flatProbs = [].concat(...this.probdb.probabilities).filter(prob => prob > 0);
     const initialProb = 1;
     const probabilityAfterTwoGoodAnswerWithoutBadAnswer = initialProb/2/2 + 0.01;
     const goodCount = flatProbs.filter(p => p < probabilityAfterTwoGoodAnswerWithoutBadAnswer).length;

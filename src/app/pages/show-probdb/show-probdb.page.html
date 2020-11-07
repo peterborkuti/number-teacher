@@ -11,7 +11,7 @@
 <ion-content>
   <ion-list>
     <ion-item>
-  <ion-select [ngModel]="selectedDbName|async" (ngModelChange)="setSelectedDbName($event)">
+  <ion-select [ngModel]="service.watchName()|async" (ngModelChange)="setSelectedDbName($event)">
     <ion-select-option *ngFor="let dbName of (service.watchNames()|async)" [value]="dbName">{{dbName}}</ion-select-option>
   </ion-select>
 </ion-item>

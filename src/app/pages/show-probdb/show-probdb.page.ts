@@ -7,22 +7,12 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
   templateUrl: './show-probdb.page.html',
   styleUrls: ['./show-probdb.page.scss'],
 })
-export class ShowProbdbPage implements OnDestroy {
-  get selectedDbName() : Observable<string> {
-    return this.service.watchName();
+export class ShowProbdbPage {
+  setSelectedDbName(dbName) {
+    this.service.setActive(dbName);
   }
-
-  setSelectedDbName(event) {
-    console.log(event);
-  }
-
-  private subscription: Subscription;
 
   constructor(private service: ProbdbService) {
-  }
-
-  ngOnDestroy() {
-    this.subscription.unsubscribe();
   }
 
   reset() {

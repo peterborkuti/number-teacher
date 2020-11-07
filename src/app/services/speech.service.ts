@@ -1,7 +1,10 @@
-import { Subject, BehaviorSubject } from 'rxjs';
+import { Subject, BehaviorSubject, Observable, from } from 'rxjs';
 import { TextToSpeech, TTSOptions } from '@ionic-native/text-to-speech/ngx';
 import ISO6391 from 'iso-639-1';
 import { StorageWrapperService } from './storage/storage-wrapper.service';
+import { takeUntil } from 'rxjs/operators';
+import { OnDestroy } from '@angular/core';
+import { Config } from '@ionic/angular';
 
 
 export const speechServiceFactory = (storage: StorageWrapperService, tts?: TextToSpeech) => {
@@ -18,42 +21,56 @@ export const speechServiceFactory = (storage: StorageWrapperService, tts?: TextT
   return new DummySpeech();
 }
 
+export const NO_LANGUAGENAMES = 'No voices';
+
 export class SpeechConfig {
-  pitch: number;
-  rate: number;
-  volume: number;
-  voiceName: string;
+  rate: number = 1;
+  pitch: number = 1;
+  volume: number = 1;
+  voiceName: string = NO_LANGUAGENAMES;
+
+  constructor(rate?: number, pitch?: number, volume?: number, voicename?: string) {
+    if (pitch !== undefined) this.pitch = pitch;
+    if (rate !== undefined) this.rate = rate;
+    if (volume !== undefined) this.volume = volume;
+    if (voicename !== undefined) this.voiceName = voicename;
+  }
 }
 
 export abstract class ASpeech {
-  public readonly $languageNames = new BehaviorSubject<string[]>([]);
-  config: SpeechConfig = <SpeechConfig>{rate: 1, volume: 1, pitch: 1, voiceName: ''};
+  config: SpeechConfig = new SpeechConfig();
   public abstract say(whatToSay: string, language?:string): void;
 
-  public getConfig(): SpeechConfig {
-    return Object.assign({}, this.config);
-  }
+  public abstract watchSpeechConfig(): Observable<SpeechConfig>;
 
   public setConfig(config: SpeechConfig) {
     this.config = Object.assign({}, config);
   }
+
+  public abstract watchLanguageNames(): Observable<string[]>;
 }
 
 export class DummySpeech extends ASpeech {
   constructor() {
     super();
-    this.$languageNames.next(["No voices"]);
+  }
+
+  public watchSpeechConfig(): Observable<SpeechConfig> {
+    return from([new SpeechConfig()]);
   }
 
   public say(whatToSay: string, language?: string): void {
     console.log("Dummy says: " + whatToSay);
+  }
+
+  public watchLanguageNames(): Observable<string[]> {
+    return from([['No voices']]);
   }
 }
 
 class TTSSpeech extends ASpeech {
   constructor(private api: TextToSpeech) {
     super();
-    this.$languageNames.next(ISO6391.getAllNames());
   }
 
   public say(whatToSay: string, language?: string): void {
@@ -72,6 +89,18 @@ class TTSSpeech extends ASpeech {
     }
 
     return language ? language : this.config.voiceName;
+  }
+
+
+  public watchLanguageNames(): Observable<string[]> {
+    return from([ISO6391.getAllNames()]);
+  }
+
+  /**
+   * @todo
+   */
+  public watchSpeechConfig(): Observable<SpeechConfig> {
+    return from([new SpeechConfig()]);
   }
 }
 
@@ -95,38 +124,58 @@ export function mapFromRange(x: number, min: number, max: number): number {
   return Math.round((x - min) * 100 / (max - min));
 }
 
-class Html5Speech extends ASpeech {
+class Html5Speech extends ASpeech implements OnDestroy {
   private readonly RATE_INTERVAL = [0.1, 2];
   private readonly PITCH_INTERVAL = [0, 2];
   private readonly VOLUME_INTERVAL = [0, 1];
 
   private voices: {[name:string]: SpeechSynthesisVoice} = {};
+  private languageNames$ = new BehaviorSubject<string[]>([NO_LANGUAGENAMES]);
+  private speechConfig$ = new BehaviorSubject<SpeechConfig>(new SpeechConfig());
+
+  private unsubscribe = new Subject();
 
   constructor(private api: SpeechSynthesis, private storage: StorageWrapperService) {
     super();
     api.onvoiceschanged = () => this.setVoices();
-    this.storage.watchSpeechConfig().subscribe((config) => {
-      if (config) {
-        this.setConfig(config);
-      }
+    this.storage.watchSpeechConfig().pipe(takeUntil(this.unsubscribe)).subscribe((config) => {
+        this.setConfigWithoutSaving(config);
     })
   }
 
-  public getConfig() {
-    return <SpeechConfig>{
-      rate: mapFromRange(this.config.rate, this.RATE_INTERVAL[0], this.RATE_INTERVAL[1]),
-      pitch: mapFromRange(this.config.pitch, this.PITCH_INTERVAL[0], this.PITCH_INTERVAL[1]),
-      volume: mapFromRange(this.config.volume, this.VOLUME_INTERVAL[0], this.VOLUME_INTERVAL[1]),
-      voiceName: this.config.voiceName
-    }
+  ngOnDestroy() {
+    this.unsubscribe.next();
+    this.unsubscribe.complete();
   }
 
-  public setConfig(config: SpeechConfig) {
+  public watchLanguageNames(): Observable<string[]> {
+    return this.languageNames$;
+  }
+
+  private getConfig(): SpeechConfig {
+    return new SpeechConfig(
+      mapFromRange(this.config.rate, this.RATE_INTERVAL[0], this.RATE_INTERVAL[1]),
+      mapFromRange(this.config.pitch, this.PITCH_INTERVAL[0], this.PITCH_INTERVAL[1]),
+      mapFromRange(this.config.volume, this.VOLUME_INTERVAL[0], this.VOLUME_INTERVAL[1]),
+      this.config.voiceName
+    )
+  }
+
+  public watchSpeechConfig(): Observable<SpeechConfig> {
+    return this.speechConfig$;
+  }
+
+  private setConfigWithoutSaving(config: SpeechConfig) {
     this.config.rate = mapToRange(config.rate, this.RATE_INTERVAL[0], this.RATE_INTERVAL[1]);
     this.config.pitch = mapToRange(config.pitch, this.PITCH_INTERVAL[0], this.PITCH_INTERVAL[1]);
     this.config.volume = mapToRange(config.volume, this.VOLUME_INTERVAL[0], this.VOLUME_INTERVAL[1]);
     this.config.voiceName = config.voiceName;
 
+    this.speechConfig$.next(this.getConfig());    
+  }
+
+  public setConfig(config: SpeechConfig) {
+    this.setConfigWithoutSaving(config);
     this.storage.saveSpeechConfig(config);
   }
 
@@ -134,8 +183,11 @@ class Html5Speech extends ASpeech {
     this.api.getVoices().forEach(voice => this.voices[voice.name]=voice);
     if (Object.keys(this.voices).length == 0) {
       console.error("No voice for speech");
+      this.languageNames$.next([NO_LANGUAGENAMES]);
     }
-    this.$languageNames.next(Object.keys(this.voices));
+    else {
+      this.languageNames$.next(Object.keys(this.voices));
+    }
   }
 
   public say(phrase: string, voiceName?: string): void {
@@ -167,7 +219,7 @@ class Html5Speech extends ASpeech {
     utterance.volume = this.config.volume;
 
     utterance.onerror = (event: SpeechSynthesisErrorEvent) => {
-      console.log("Error when saying " + phrase + ": " + event.error);
+      console.error("Error when saying " + phrase + ": " + event.error);
     }
 
     this.api.speak(utterance);

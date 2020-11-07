@@ -1,6 +1,6 @@
 <p>
   <ion-select [(ngModel)]="voiceName">
-    <ion-select-option *ngFor="let name of voiceNames" [value]="name">{{name}}</ion-select-option>
+    <ion-select-option *ngFor="let name of (this.speechService.languageNames$|async)" [value]="name">{{name}}</ion-select-option>
   </ion-select>
 
   <ion-range min="0" max="100" step="1" ticks="10" pin [(ngModel)]="pitch">

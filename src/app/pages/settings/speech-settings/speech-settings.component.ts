@@ -1,17 +1,17 @@
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { ASpeech, SpeechConfig } from 'src/app/services/speech.service';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { StorageWrapperService } from 'src/app/services/storage/storage-wrapper.service';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'speech-settings',
   templateUrl: './speech-settings.component.html',
   styleUrls: ['./speech-settings.component.scss'],
 })
-export class SpeechSettingsComponent implements OnInit, OnDestroy {
+export class SpeechSettingsComponent implements OnDestroy {
+  private unsubscribe = new Subject();
   private speechConfig: SpeechConfig = <SpeechConfig>{pitch: 0, rate: 0, volume: 0, voiceName: ''};
-  public voiceNames: string[] = [];
-  private voiceName$: Subscription;
 
   set voiceName(name: string) {
     this.speechConfig.voiceName = name;
@@ -35,8 +35,6 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
 
   private setCommon() {
     this.speechService.setConfig(this.speechConfig);
-    this.storage.saveSpeechConfig(this.speechConfig);
-
     this.speechService.say("123");
   }
 
@@ -57,22 +55,15 @@ export class SpeechSettingsComponent implements OnInit, OnDestroy {
     return this.speechConfig.voiceName;
   }
 
-  constructor(private speechService: ASpeech, private storage: StorageWrapperService) {
-
-    this.voiceName$ = this.speechService.$languageNames.subscribe(names => this.voiceNames = names);
-    this.storage.watchSpeechConfig().subscribe((config) => {
-      if (config) {
+  constructor(private speechService: ASpeech) {
+    this.speechService.watchSpeechConfig().pipe(takeUntil(this.unsubscribe)).subscribe((config) => {
         this.speechConfig = config
-        this.setCommon();
-    }});
-  }
-
-  ngOnInit() {
-    this.speechConfig = this.speechService.getConfig();
+    });
   }
 
   ngOnDestroy() {
-    this.voiceName$.unsubscribe();
+    this.unsubscribe.next();
+    this.unsubscribe.complete();
   }
 
 }
