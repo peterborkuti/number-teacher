@@ -1,7 +1,6 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { ASpeech, SpeechConfig } from 'src/app/services/speech.service';
-import { Subject, Subscription } from 'rxjs';
-import { StorageWrapperService } from 'src/app/services/storage/storage-wrapper.service';
+import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
 @Component({
