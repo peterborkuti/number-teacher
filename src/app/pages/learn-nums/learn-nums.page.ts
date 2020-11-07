@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Subscription } from 'rxjs';
+import { Component, ViewChild } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
+import { TeacherComponent } from './teacher/teacher.component';
 
 @Component({
   selector: 'app-learn-nums',
@@ -8,13 +8,12 @@ import { ProbdbService } from 'src/app/services/core/probdb.service';
   styleUrls: ['./learn-nums.page.scss'],
 })
 export class LearnNumsPage {
-  reset = 0;
+  @ViewChild(TeacherComponent) teacherComponent: TeacherComponent;
 
-  constructor(private service: ProbdbService) {
-  }
+  constructor(private service: ProbdbService) {}
 
-  init() {
-    this.reset = this.reset % 2 + 1;
+  ionViewDidEnter() {
+    this.teacherComponent && this.teacherComponent.newQuestion();
   }
 
 }

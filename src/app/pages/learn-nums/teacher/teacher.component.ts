@@ -11,13 +11,8 @@ import { IonInput } from '@ionic/angular';
   templateUrl: './teacher.component.html',
   styleUrls: ['./teacher.component.scss'],
 })
-export class TeacherComponent implements OnInit {
+export class TeacherComponent {
   @ViewChild('numberInput') numberInput: IonInput;
-
-  @Input()
-  set reset(tmp: any) {
-    this.newQuestion();
-  }
 
   question: string;
   answer: string;
@@ -35,11 +30,7 @@ export class TeacherComponent implements OnInit {
     private speechService: ASpeech,
     private hintService: HintService) { }
 
-  ngOnInit() {
-    this.newQuestion();
-  }
-
-  newQuestion() {
+  public newQuestion() {
     const digits = this.probdbService.getNumberToAsk();
     this.question = digits.join('');
     this.answer = '';

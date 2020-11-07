@@ -43,24 +43,23 @@ describe('TeacherComponent', () => {
   });
 
   it('generates question on init', () => {
-    component.ngOnInit();
+    component.newQuestion();
     expect(component.question).toBe(QUESTION);
   })
 
   it('empties answer on init', () => {
     component.answer ='ANYVALUE';
-    component.ngOnInit();
+    component.newQuestion();
     expect(component.answer).toBe('');
   })
 
   it('sets hint on init', () => {
     component.hint ='ANYVALUE';
-    component.ngOnInit();
+    component.newQuestion();
     expect(component.hint).toBe(Array(QUESTION.length).fill('?').join(''));
   })
 
   it('shows ? and 1 digit as hint when user clicks on hint button', () => {
-    component.ngOnInit();
     expect(component.hint).toBe(Array(QUESTION.length).fill('?').join(''));
 
     component.showHint();

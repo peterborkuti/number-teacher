@@ -1,43 +1,61 @@
 import { async, ComponentFixture, TestBed } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
 import { IonicModule } from '@ionic/angular';
-import { IonicStorageModule } from '@ionic/storage';
-import { Storage } from '@ionic/storage';
 
 import { LearnNumsPage } from './learn-nums.page';
+import { Component } from '@angular/core';
+import { ProbdbService } from 'src/app/services/core/probdb.service';
+import { of } from 'rxjs';
+import { TeacherComponent } from './teacher/teacher.component';
+
+
+@Component({selector: 'teacher', template: ''})
+class TeacherStubComponent{
+  newQuestion() {}
+}
 
 describe('LearnNumsPage', () => {
-  const storageName = '_' + Math.random();
-
   let component: LearnNumsPage;
+  let teacherComponent = new TeacherStubComponent();
   let fixture: ComponentFixture<LearnNumsPage>;
-
-  let storage: Storage;
+  let probdbService: ProbdbService = <ProbdbService>{
+    watchName: () => of('PROBDBNAME')
+  }
 
   beforeEach(async(() => {
     TestBed.configureTestingModule({
-      declarations: [ LearnNumsPage ],
+      declarations: [ TeacherStubComponent, LearnNumsPage ],
       imports: [
         IonicModule.forRoot(),
         RouterTestingModule,
-        IonicStorageModule.forRoot({
-          name: storageName,
-          driverOrder: ['localstorage']
-        })
+      ],
+      providers: [
+        {provide: ProbdbService, useValue: probdbService},
+        {provide: TeacherComponent, useValue: teacherComponent}
       ]
     }).compileComponents();
 
     fixture = TestBed.createComponent(LearnNumsPage);
-    storage = TestBed.inject(Storage);
     component = fixture.componentInstance;
     fixture.detectChanges();
   }));
 
-  afterEach((done) => {
-    storage.clear().then(() => done());
-  })
-
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('shows probdb name as icon-title', () => {
+    const title: HTMLElement = fixture.nativeElement.querySelector('ion-title');
+    expect(title.textContent).toContain('PROBDBNAME');
+  })
+
+  it('generates new question after page load', () => {
+    //should be truthy
+    component.teacherComponent = TestBed.inject(TeacherComponent);
+    spyOn(teacherComponent, 'newQuestion');
+
+    component.ionViewDidEnter();
+
+    expect(teacherComponent.newQuestion).toHaveBeenCalled();
+  })
 });
