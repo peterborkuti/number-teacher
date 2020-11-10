@@ -25,7 +25,7 @@ export class TeacherComponent {
   hintFunction: HintFunction;
 
   constructor(
-    private probdbService: ProbdbService,
+    public probdbService: ProbdbService,
     private answerChecker: AnswerCheckerService,
     private speechService: ASpeech,
     private hintService: HintService) { }

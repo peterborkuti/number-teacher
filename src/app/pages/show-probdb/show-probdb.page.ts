@@ -1,5 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Observable, Subscription } from 'rxjs';
+import { Component } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 
 @Component({
@@ -12,7 +11,7 @@ export class ShowProbdbPage {
     this.service.setActive(dbName);
   }
 
-  constructor(private service: ProbdbService) {
+  constructor(public service: ProbdbService) {
   }
 
   reset() {

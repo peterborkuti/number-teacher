@@ -10,7 +10,7 @@ import { TeacherComponent } from './teacher/teacher.component';
 export class LearnNumsPage {
   @ViewChild(TeacherComponent) teacherComponent: TeacherComponent;
 
-  constructor(private service: ProbdbService) {}
+  constructor(public service: ProbdbService) {}
 
   ionViewDidEnter() {
     this.teacherComponent && this.teacherComponent.newQuestion();

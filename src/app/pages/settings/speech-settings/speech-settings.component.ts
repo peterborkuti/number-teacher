@@ -1,7 +1,8 @@
 import { Component, OnDestroy } from '@angular/core';
-import { ASpeech, SpeechConfig } from 'src/app/services/speech.service';
+import { ASpeech } from 'src/app/services/speech.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { SpeechConfig } from 'src/app/services/speech-config';
 
 @Component({
   selector: 'speech-settings',
@@ -54,7 +55,7 @@ export class SpeechSettingsComponent implements OnDestroy {
     return this.speechConfig.voiceName;
   }
 
-  constructor(private speechService: ASpeech) {
+  constructor(public speechService: ASpeech) {
     this.speechService.watchSpeechConfig().pipe(takeUntil(this.unsubscribe)).subscribe((config) => {
         this.speechConfig = config
     });

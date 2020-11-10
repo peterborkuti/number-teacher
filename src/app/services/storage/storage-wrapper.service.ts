@@ -3,7 +3,7 @@ import { Storage } from '@ionic/storage';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { filter } from 'rxjs/operators';
 import { ProbDB } from '../core/prob-db';
-import { SpeechConfig } from '../speech.service';
+import { SpeechConfig } from '../speech-config';
 
 @Injectable({
   providedIn: 'root'

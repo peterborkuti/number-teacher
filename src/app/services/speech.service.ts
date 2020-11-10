@@ -3,8 +3,9 @@ import { TextToSpeech, TTSOptions } from '@ionic-native/text-to-speech/ngx';
 import ISO6391 from 'iso-639-1';
 import { StorageWrapperService } from './storage/storage-wrapper.service';
 import { takeUntil } from 'rxjs/operators';
-import { OnDestroy } from '@angular/core';
+import { Component, OnDestroy } from '@angular/core';
 import { Config } from '@ionic/angular';
+import { NO_LANGUAGENAMES, SpeechConfig } from './speech-config';
 
 
 export const speechServiceFactory = (storage: StorageWrapperService, tts?: TextToSpeech) => {
@@ -19,22 +20,6 @@ export const speechServiceFactory = (storage: StorageWrapperService, tts?: TextT
   console.error("No speech api in this environment");
 
   return new DummySpeech();
-}
-
-export const NO_LANGUAGENAMES = 'No voices';
-
-export class SpeechConfig {
-  rate: number = 1;
-  pitch: number = 1;
-  volume: number = 1;
-  voiceName: string = NO_LANGUAGENAMES;
-
-  constructor(rate?: number, pitch?: number, volume?: number, voicename?: string) {
-    if (pitch !== undefined) this.pitch = pitch;
-    if (rate !== undefined) this.rate = rate;
-    if (volume !== undefined) this.volume = volume;
-    if (voicename !== undefined) this.voiceName = voicename;
-  }
 }
 
 export abstract class ASpeech {
@@ -124,6 +109,9 @@ export function mapFromRange(x: number, min: number, max: number): number {
   return Math.round((x - min) * 100 / (max - min));
 }
 
+@Component({
+  template: ''
+})
 class Html5Speech extends ASpeech implements OnDestroy {
   private readonly RATE_INTERVAL = [0.1, 2];
   private readonly PITCH_INTERVAL = [0, 2];
