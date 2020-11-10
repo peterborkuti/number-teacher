@@ -2,7 +2,7 @@ import { Component, Input, OnInit, ViewChild } from '@angular/core';
 import { ProbdbService } from 'src/app/services/core/probdb.service';
 import { AnswerCheckerService } from 'src/app/services/core/answer-checker.service';
 import { ASpeech } from 'src/app/services/speech.service';
-import { HintService, HintManager } from 'src/app/services/hint.service';
+import { HintService, HintFunction } from 'src/app/services/hint.service';
 import { IonInput } from '@ionic/angular';
 
 
@@ -17,12 +17,12 @@ export class TeacherComponent {
   question: string;
   answer: string;
 
-  wrongAnswer = true;
+  wrongAnswer = false;
   answerIsEmpty = true;
 
   hint = '';
 
-  private hintManager: HintManager;
+  hintFunction: HintFunction;
 
   constructor(
     private probdbService: ProbdbService,
@@ -38,19 +38,13 @@ export class TeacherComponent {
 
     this.say(this.question);
 
-    this.hintManager = this.hintService.newHint(this.question);
-    this.hint = this.hintManager.getHint();
+    this.hintFunction = this.hintService.newHint(this.question);
+    this.hint = "?".repeat(this.question.length);
 
     setTimeout(() => this.numberInput.setFocus(), 0);
   }
 
   checkAnswer() {
-    if (this.wrongAnswer) {
-      this.newQuestion();
-
-      return;
-    }
-
     const checked = this.answerChecker.check(this.question, ''+this.answer);
     checked.bads.forEach(c => this.probdbService.bad(c.exp, c.digit));
     checked.goods.forEach(c => this.probdbService.good(c.exp, c.digit));
@@ -60,7 +54,9 @@ export class TeacherComponent {
     if (!this.wrongAnswer) {
       this.newQuestion();
     }
-
+    else {
+      this.hint = this.question;
+    }
   }
 
   inputChanged(value: string) {
@@ -72,6 +68,6 @@ export class TeacherComponent {
   }
 
   showHint() {
-    this.hint = this.hintManager.nextHint();
+    this.hint = this.hintFunction();
   }
 }

@@ -1,7 +1,6 @@
 <p>
   <ion-button name="say" (click)="say(question)">
     <ion-icon name="megaphone"></ion-icon>
-    <span *ngIf="wrongAnswer">{{question}}</span>
   </ion-button>
 
   <ion-button [disabled]="wrongAnswer" name="hint" (click)="showHint()">{{hint}}</ion-button>
@@ -15,8 +14,12 @@
     [(ngModel)]="answer">
   </ion-input>
 
-  <ion-button [disabled]="answerIsEmpty" name="check" (click)="checkAnswer()">
+  <ion-button *ngIf="!wrongAnswer" [disabled]="answerIsEmpty" name="check" (click)="checkAnswer()">
     <ion-icon name="checkmark"></ion-icon>
+  </ion-button>
+
+  <ion-button *ngIf="wrongAnswer" name="new" (click)="newQuestion()">
+    <ion-icon name="caret-forward"></ion-icon>
   </ion-button>
 
   <ion-button *ngIf="wrongAnswer" color="danger" name="sayAnswer" (click)="say(answer)">

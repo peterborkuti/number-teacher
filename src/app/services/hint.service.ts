@@ -1,35 +1,27 @@
 import { Injectable } from '@angular/core';
 
-export class HintManager {
-  getHint: Function;
-  nextHint: Function;
+export interface HintFunction {
+  (): string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class HintService {
-  public newHint(question: string): HintManager {
+  public newHint(question: string): HintFunction {
     let hintIndexesIndex = 0;
     const hintIndexes = this.indexesInRandomOrder(question.length);
-    let hint = Array(question.length).fill('?');
 
+    return ():string => {
+      const hint = Array(question.length).fill('?');
 
-    return <HintManager>{
-      getHint: () => hint.join(''),
+      const hintIndex = hintIndexes[hintIndexesIndex];
+      hintIndexesIndex = (hintIndexesIndex >= hintIndexes.length - 1) ? 0 : hintIndexesIndex + 1;
 
-      nextHint: () => {
-        hint = Array(question.length).fill('?');
+      hint[hintIndex] = question[hintIndex];
 
-        const hintIndex = hintIndexes[hintIndexesIndex];
-        hintIndexesIndex = (hintIndexesIndex >= hintIndexes.length - 1) ? 0 : hintIndexesIndex + 1;
-    
-        hint[hintIndex] = question[hintIndex];
-
-        return hint.join('');
-      }
+      return hint.join('');
     }
-
   }
 
   private indexesInRandomOrder(n: number): number[] {
